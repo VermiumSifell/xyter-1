@@ -4,8 +4,8 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import dns from "node:dns";
 import deferReply from "../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../helpers/getEmbedConfig";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -24,107 +24,42 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, false);
 
-  const { errorColor, successColor, footerText, footerIcon } =
-    await getEmbedConfig(interaction.guild);
-  const embedTitle = "[:hammer:] Utility (Lookup)";
+  const { options, user } = interaction;
 
-  const { options } = interaction;
-  const query = options.getString("query");
+  const query = options.getString("query", true);
 
-  await axios.get(`http://ip-api.com/json/${query}`).then(async (response) => {
-    if (response.data.status !== "success") {
+  dns.lookup(query, async (err, address, family) => {
+    await axios.get(`https://ipinfo.io/${address}`).then(async (response) => {
+      const { data } = response;
+
       await interaction.editReply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(embedTitle)
-            .setFooter({
-              text: footerText,
-              iconURL: footerIcon,
+            .setAuthor({
+              name: `Powered using IPinfo.io`,
+              url: "https://ipinfo.io",
+              iconURL: "https://ipinfo.io/static/favicon-96x96.png?v3",
             })
-            .setTimestamp(new Date())
-            .setColor(errorColor)
-            .setFooter({ text: footerText, iconURL: footerIcon })
-            .setDescription(
-              `${response?.data?.message}: ${response?.data?.query}`
-            ),
+            .setColor("#895aed")
+            .setFooter({
+              text: `Requested by ${user.username}`,
+              iconURL: user.displayAvatarURL(),
+            })
+            .setTimestamp().setDescription(`
+            **IP**: ${data.ip}
+            **Hostname**: ${data.hostname}
+            **Organization**: ${data.org}
+            **Anycast**: ${data.anycast ? "Yes" : "No"}
+
+            **City**: ${data.city}
+            **Region**: ${data.region}
+            **Country**: ${data.country}
+            **Location**: ${data.loc}
+            **Postal**: ${data.postal}
+            **Timezone**: ${data.timezone}
+          `),
         ],
       });
-      return;
-    }
-
-    await interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(embedTitle)
-          .setFooter({
-            text: footerText,
-            iconURL: footerIcon,
-          })
-          .setTimestamp(new Date())
-          .setColor(successColor)
-          .setFields([
-            {
-              name: ":classical_building: AS",
-              value: `${response.data.as || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":classical_building: ISP",
-              value: `${response.data.isp || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":classical_building: Organization",
-              value: `${response.data.org || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":compass: Latitude",
-              value: `${response.data.lat || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":compass: Longitude",
-              value: `${response.data.lon || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":clock4: Timezone",
-              value: `${response.data.timezone || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: Country",
-              value: `${response.data.country || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: Region",
-              value: `${response.data.regionName || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: City",
-              value: `${response.data.city || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: Country Code",
-              value: `${response.data.countryCode || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: Region Code",
-              value: `${response.data.region || "Unknown"}`,
-              inline: true,
-            },
-            {
-              name: ":globe_with_meridians: ZIP",
-              value: `${response.data.zip || "Unknown"}`,
-              inline: true,
-            },
-          ]),
-      ],
     });
   });
 };

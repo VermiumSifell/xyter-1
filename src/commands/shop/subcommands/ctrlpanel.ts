@@ -8,15 +8,13 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
-import prisma from "../../../handlers/prisma";
 import deferReply from "../../../helpers/deferReply";
-import getEmbedData from "../../../helpers/getEmbedConfig";
 import createVoucher from "../../../modules/cpgg/features/createVoucher";
 import credits from "../../../modules/credits";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
-    .setName("cpgg")
+    .setName("ctrlpanel")
     .setDescription("Buy cpgg power.")
     .addIntegerOption((option) =>
       option
@@ -33,51 +31,18 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, true);
   if (!guild) throw new Error("This command can only be executed in a guild");
 
-  const { successColor, footerText, footerIcon } = await getEmbedData(guild);
+  const successColor = "#FFFFFF"; // Replace with the actual success color
+  const footerText = "YOUR_FOOTER_TEXT"; // Replace with the actual footer text
+  const footerIcon = "YOUR_FOOTER_ICON_URL"; // Replace with the actual footer icon URL
 
   const withdrawAmount = options.getInteger("withdraw");
   if (!withdrawAmount) throw new Error("You must specify a withdraw amount");
 
-  const upsertGuildMemberCredit = await prisma.guildMemberCredit.upsert({
-    where: {
-      userId_guildId: {
-        userId: user.id,
-        guildId: guild.id,
-      },
-    },
-    update: {},
-    create: {
-      guildMember: {
-        connectOrCreate: {
-          create: {
-            userId: user.id,
-            guildId: guild.id,
-          },
-          where: {
-            userId_guildId: {
-              userId: user.id,
-              guildId: guild.id,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (withdrawAmount < 100)
-    throw new Error(
-      "To prevent abuse of the Controlpanel.gg API, you can't withdraw less than 100 credits"
-    );
-
-  if (withdrawAmount >= 999999)
-    throw new Error(
-      "Controlpanel.gg API do not support vouchers withdrawing more than 999.999 credits"
-    );
-
-  if (upsertGuildMemberCredit.balance < withdrawAmount)
-    throw new Error(
-      `You do not have enough credits to withdraw ${withdrawAmount} credits`
-    );
+  // if (!apiCredentials) {
+  //   throw new Error(
+  //     "Please ask the server administrator to configure the API credentials for CtrlPanel.gg to enable this functionality."
+  //   );
+  // }
 
   const userDM = await client.users.fetch(user.id);
   const code = uuidv4();
@@ -99,7 +64,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setTimestamp()
     .addFields({
       name: "💶 Credits",
-      value: `${withdrawAmount || upsertGuildMemberCredit.balance}`,
+      value: `${withdrawAmount}`,
       inline: true,
     })
     .setColor(successColor)

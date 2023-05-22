@@ -2,6 +2,13 @@ import axios from "axios";
 import { Guild } from "discord.js";
 import prisma from "../../../handlers/prisma";
 import encryption from "../../../helpers/encryption";
+import { IEncryptionData } from "../../../interfaces/EncryptionData";
+
+interface ApiCredentials {
+  url: IEncryptionData;
+  token: IEncryptionData;
+  [key: string]: unknown;
+}
 
 export default async (
   guild: Guild,
@@ -9,52 +16,34 @@ export default async (
   amount: number,
   uses: number
 ) => {
-  const upsertGuildConfigApisCpgg = await prisma.guildConfigApisCpgg.upsert({
+  const apiCredentials = await prisma.apiCredentials.findUnique({
     where: {
-      id: guild.id,
-    },
-    update: {},
-    create: {
-      guild: {
-        connectOrCreate: {
-          create: {
-            id: guild.id,
-          },
-          where: {
-            id: guild.id,
-          },
-        },
+      guildId_apiName: {
+        guildId: guild.id,
+        apiName: "Ctrlpanel.gg",
       },
     },
-    include: {
-      guild: true,
-    },
   });
 
-  if (
-    !upsertGuildConfigApisCpgg.urlIv ||
-    !upsertGuildConfigApisCpgg.urlContent ||
-    !upsertGuildConfigApisCpgg.tokenIv ||
-    !upsertGuildConfigApisCpgg.tokenContent
-  )
+  if (!apiCredentials || !apiCredentials.credentials) {
     throw new Error(
-      "Please ask the server administrator to configure the API for controlpanel.gg to enable this functionality."
+      "Please ask the server administrator to configure the CtrlPanel.gg API credentials for this guild to enable this functionality."
     );
+  }
 
-  const url = encryption.decrypt({
-    iv: upsertGuildConfigApisCpgg.urlIv,
-    content: upsertGuildConfigApisCpgg.urlContent,
-  });
-  const api = axios?.create({
-    baseURL: `${url}/api/`,
+  const { url, token } = apiCredentials.credentials as ApiCredentials;
+
+  const plainUrl = encryption.decrypt(url);
+  const plainToken = encryption.decrypt(token);
+
+  const api = axios.create({
+    baseURL: plainUrl,
     headers: {
-      Authorization: `Bearer ${encryption.decrypt({
-        iv: upsertGuildConfigApisCpgg.tokenIv,
-        content: upsertGuildConfigApisCpgg.tokenContent,
-      })}`,
+      Authorization: plainToken ? `Bearer ${plainToken}` : undefined,
     },
   });
-  const shopUrl = `${url}/store`;
+
+  const shopUrl = `${plainUrl}/store`;
 
   await api.post("vouchers", {
     uses,

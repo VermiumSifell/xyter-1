@@ -4,6 +4,7 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
 import economy from "../../../../modules/credits";
 import jobs from "./jobs";
@@ -39,10 +40,17 @@ export const execute = async (interaction: CommandInteraction) => {
     return chance.pickone(jobs);
   };
 
-  const baseCreditsRate = getRandomWork().creditsRate; // Get the base rate of credits earned per work action
-  const bonusChance = 30; // Higher chance of earning a bonus
-  const penaltyChance = 10; // Lower chance of receiving a penalty
+  // Retrieve settings from the GuildSettings model
+  const guildCreditsSettings = await prisma.guildCreditsSettings.findUnique({
+    where: { id: guild.id },
+  });
 
+  console.log(guildCreditsSettings?.workBonusChance);
+  console.log(guildCreditsSettings?.workPenaltyChance);
+
+  const baseCreditsRate = getRandomWork().creditsRate; // Get the base rate of credits earned per work action
+  const bonusChance = guildCreditsSettings?.workBonusChance || 30; // Retrieve bonus chance from guild settings or use default value
+  const penaltyChance = guildCreditsSettings?.workPenaltyChance || 10; // Retrieve penalty chance from guild settings or use default value
   const baseCreditsEarned = chance.integer({ min: 1, max: baseCreditsRate }); // Generate a random base number of credits earned
 
   let bonusCredits = 0; // Initialize bonus credits
@@ -90,7 +98,9 @@ export const execute = async (interaction: CommandInteraction) => {
     `Total earnings: **${creditsEarned} credits**. Keep up the hustle!`
   );
 
-  await economy.give(guild, user, creditsEarned); // Give the user the earned credits
+  if (creditsEarned > 0) {
+    await economy.give(guild, user, creditsEarned); // Give the user the earned credits
+  }
 
   // User Balance
   const userBalance = await economy.balance(guild, user);

@@ -5,10 +5,8 @@ const generateRandomIV = (): Buffer => {
   return crypto.randomBytes(16);
 };
 
-const encrypt = (
-  text: crypto.BinaryLike,
-  encryptionSecret: crypto.BinaryLike
-): IEncryptionData => {
+const encrypt = (text: crypto.BinaryLike): IEncryptionData => {
+  const encryptionSecret = process.env.ENCRYPTION_SECRET;
   const iv = generateRandomIV();
   const cipher = crypto.createCipheriv("aes-256-cbc", encryptionSecret, iv);
   const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
@@ -24,10 +22,8 @@ const encrypt = (
   };
 };
 
-const decrypt = (
-  hash: IEncryptionData,
-  encryptionSecret: crypto.BinaryLike
-): string => {
+const decrypt = (hash: IEncryptionData): string => {
+  const encryptionSecret = process.env.ENCRYPTION_SECRET;
   const ivBuffer = Buffer.from(hash.iv, "hex");
 
   const decipher = crypto.createDecipheriv(

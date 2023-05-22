@@ -11,17 +11,28 @@ datasource db {
 }
 
 model Guild {
-  id          String        @unique
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  GuildMember GuildMember[]
+  id                      String                   @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  GuildMember             GuildMember[]
+  GuildSettings           GuildSettings?
+  GuildEmbedSettings      GuildEmbedSettings?
+  GuildCreditsSettings    GuildCreditsSettings?
+  GuildPointsSettings     GuildPointsSettings?
+  GuildReputationSettings GuildReputationSettings?
+  GuildCountersSettings   GuildCountersSettings?
+  GuildAuditsSettings     GuildAuditsSettings?
+  GuildShopSettings       GuildShopSettings?
+  GuildWelcomeSettings    GuildWelcomeSettings?
+  ApiCredentials          ApiCredentials[]
 }
 
 model User {
-  id          String        @unique
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  GuildMember GuildMember[]
+  id             String           @unique
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  GuildMember    GuildMember[]
+  ApiCredentials ApiCredentials[]
 }
 
 model GuildMember {
@@ -33,6 +44,7 @@ model GuildMember {
   User                  User                   @relation(fields: [userId], references: [id])
   GuildMemberCredit     GuildMemberCredit?
   GuildMemberReputation GuildMemberReputation?
+  ApiCredentials        ApiCredentials[]
 
   @@unique([guildId, userId])
 }
@@ -63,30 +75,157 @@ model GuildMemberReputation {
   @@unique([guildId, userId])
 }
 
-// model User {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+model GuildSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   guildAccounts GuildMember[]
-//   cooldowns     Cooldown[]
+  guild Guild @relation(fields: [id], references: [id])
 
-//   reputationsEarned Int @default(0)
-// }
+  embedSettings             GuildEmbedSettings?      @relation(fields: [guildEmbedSettingsId], references: [id])
+  creditsSettings           GuildCreditsSettings?    @relation(fields: [guildCreditsSettingsId], references: [id])
+  pointsSettings            GuildPointsSettings?     @relation(fields: [guildPointsSettingsId], references: [id])
+  reputationSettings        GuildReputationSettings? @relation(fields: [guildReputationSettingsId], references: [id])
+  countersSettings          GuildCountersSettings?   @relation(fields: [guildCountersSettingsId], references: [id])
+  auditsSettings            GuildAuditsSettings?     @relation(fields: [guildAuditsSettingsId], references: [id])
+  shopSettings              GuildShopSettings?       @relation(fields: [guildShopSettingsId], references: [id])
+  welcomeSettings           GuildWelcomeSettings?    @relation(fields: [guildWelcomeSettingsId], references: [id])
+  guildEmbedSettingsId      String?
+  guildCreditsSettingsId    String?
+  guildPointsSettingsId     String?
+  guildReputationSettingsId String?
+  guildCountersSettingsId   String?
+  guildAuditsSettingsId     String?
+  guildShopSettingsId       String?
+  guildWelcomeSettingsId    String?
+}
 
-// model GuildMember {
-//   userId    String
-//   guildId   String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
+model GuildEmbedSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   user  User  @relation(fields: [userId], references: [id])
-//   guild Guild @relation(fields: [guildId], references: [id])
+  guild Guild @relation(fields: [id], references: [id])
 
-//   credits GuildMemberCredit?
+  successColor  String?         @default("#22bb33")
+  waitColor     String?         @default("#f0ad4e")
+  errorColor    String?         @default("#bb2124")
+  footerText    String?         @default("https://github.com/ZynerOrg/xyter")
+  footerIcon    String?         @default("https://github.com/ZynerOrg.png")
+  GuildSettings GuildSettings[]
+}
 
-//   @@unique([userId, guildId])
-// }
+model GuildCreditsSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  workBonusChance   Int             @default(30)
+  workPenaltyChance Int             @default(10)
+  status            Boolean         @default(false)
+  rate              Int             @default(1)
+  timeout           Int             @default(5)
+  workRate          Int             @default(25)
+  workTimeout       Int             @default(86400)
+  minimumLength     Int             @default(5)
+  GuildSettings     GuildSettings[]
+}
+
+model GuildPointsSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status        Boolean         @default(false)
+  rate          Int             @default(1)
+  timeout       Int             @default(5)
+  minimumLength Int             @default(5)
+  GuildSettings GuildSettings[]
+}
+
+model GuildReputationSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status        Boolean         @default(false)
+  GuildSettings GuildSettings[]
+}
+
+model GuildCountersSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status        Boolean         @default(false)
+  GuildSettings GuildSettings[]
+}
+
+model GuildAuditsSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status        Boolean         @default(false)
+  channelId     String?
+  GuildSettings GuildSettings[]
+}
+
+model GuildShopSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status        Boolean         @default(false)
+  GuildSettings GuildSettings[]
+}
+
+model GuildWelcomeSettings {
+  id        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [id], references: [id])
+
+  status              Boolean         @default(false)
+  joinChannelId       String?
+  joinChannelMessage  String?
+  leaveChannelId      String?
+  leaveChannelMessage String?
+  GuildSettings       GuildSettings[]
+}
+
+model ApiCredentials {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild   Guild?  @relation(fields: [guildId], references: [id])
+  guildId String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  guildMember GuildMember? @relation(fields: [guildId, userId], references: [guildId, userId])
+
+  apiName     String
+  credentials Json
+
+  @@unique([guildId, apiName])
+  @@unique([userId, apiName])
+}
 
 // model GuildConfigEmbeds {
 //   id        String   @unique
