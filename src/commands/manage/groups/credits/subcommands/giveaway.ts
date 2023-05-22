@@ -47,8 +47,6 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, true);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
-
   const uses = options?.getInteger("uses");
   const creditAmount = options?.getInteger("credit");
   const channel = options?.getChannel("channel");
@@ -60,8 +58,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   const embedSuccess = new EmbedBuilder()
     .setTitle(":toolbox:︱Giveaway")
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
+    .setColor("#FFFFFF")
     .setTimestamp(new Date());
 
   const code = uuidv4();
