@@ -13,7 +13,6 @@ import { v4 as uuidv4 } from "uuid";
 // Configurations
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../../helpers/getEmbedConfig";
 import createVoucher from "../../../../../modules/ctrlpanel/features/createVoucher";
 
 // Function
