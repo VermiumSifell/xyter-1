@@ -14,9 +14,9 @@ export const execute = async (interaction: BaseInteraction) => {
 
   logger.verbose({
     message: `New interaction created: ${interaction.id} by: ${user.tag} (${user.id})`,
-    interaction,
-    guild,
-    user,
+    interactionId: interaction.id,
+    userId: user.id,
+    guildId: guild?.id,
   });
 
   if (guild) {
@@ -30,12 +30,29 @@ export const execute = async (interaction: BaseInteraction) => {
       } else if (interaction.isButton()) {
         await button(interaction);
       } else {
-        throw new Error("Unknown interaction type");
+        const errorMessage = "Unknown interaction type";
+        logger.error({
+          message: errorMessage,
+          error: new Error(errorMessage),
+          interactionId: interaction.id,
+          userId: user.id,
+          guildId: guild?.id,
+        });
+        throw new Error(errorMessage);
       }
       break;
     }
-    default:
-      throw new Error("Unknown interaction type");
+    default: {
+      const errorMessage = "Unknown interaction type";
+      logger.error({
+        message: errorMessage,
+        error: new Error(errorMessage),
+        interactionId: interaction.id,
+        userId: user.id,
+        guildId: guild?.id,
+      });
+      throw new Error(errorMessage);
+    }
   }
 
   //  await sendAuditEntry(interaction);
