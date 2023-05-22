@@ -25,7 +25,7 @@ export const execute = async (interaction: CommandInteraction) => {
 
   if (!guild) {
     throw new Error(
-      "Apologies, but this command is restricted to guild environments only."
+      "Apologies, but this command is restricted to guild environments only. ❌"
     );
   }
 
@@ -44,7 +44,7 @@ export const execute = async (interaction: CommandInteraction) => {
         }).setDescription(`
    ${checkAccount.id !== user.id ? `${checkAccount} has` : `You have`} ${
         creditAccount.balance
-      } credits.`),
+      } credits. 💰`),
     ],
   });
 };

@@ -104,7 +104,7 @@ export const execute = async (interaction: CommandInteraction) => {
     .setTimestamp()
     .setDescription(descriptions.join("\n"))
     .setFooter({
-      text: `You just worked as a ${work.name}! ${
+      text: `${user.username} just worked as a ${work.name}! ${
         work?.emoji || fallbackEmoji
       }`,
     })
