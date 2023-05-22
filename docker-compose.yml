@@ -26,6 +26,8 @@ services:
     container_name: mariadb
     image: lscr.io/linuxserver/mariadb:latest
     restart: unless-stopped
+    ports:
+      - 3306:3306
     volumes:
       - ./db:/config
     env_file:

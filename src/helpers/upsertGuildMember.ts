@@ -4,14 +4,14 @@ import db from "../handlers/prisma";
 export default async (guild: Guild, user: User) => {
   return await db.guildMember.upsert({
     where: {
-      userId_guildId: {
-        userId: user.id,
+      guildId_userId: {
         guildId: guild.id,
+        userId: user.id,
       },
     },
     update: {},
     create: {
-      user: {
+      User: {
         connectOrCreate: {
           create: {
             id: user.id,
@@ -21,7 +21,7 @@ export default async (guild: Guild, user: User) => {
           },
         },
       },
-      guild: {
+      Guild: {
         connectOrCreate: {
           create: {
             id: guild.id,

@@ -3,80 +3,48 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../helpers/getEmbedConfig";
-import upsertGuildMember from "../../../../helpers/upsertGuildMember";
-import logger from "../../../../middlewares/logger";
+import credits from "../../../../modules/credits";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
     .setName("balance")
-    .setDescription(`Check balance`)
+    .setDescription(`View account balance`)
     .addUserOption((option) =>
-      option.setName("target").setDescription(`Account you want to check`)
+      option
+        .setName("account")
+        .setDescription(
+          `Here you can enter the username of another user to check their balance`
+        )
     );
 };
 
 export const execute = async (interaction: CommandInteraction) => {
+  const { options, user, guild } = interaction;
   await deferReply(interaction, true);
 
-  const { options, user, guild } = interaction;
-  if (!guild) throw new Error("Server unavailable");
-  if (!user) throw new Error("User unavailable");
-  if (!options) throw new Error("Options unavailable");
+  if (!guild) {
+    throw new Error(
+      "Apologies, but this command is restricted to guild environments only."
+    );
+  }
 
-  const target = options.getUser("target");
+  const checkAccount = options.getUser("account") || user;
+  const creditAccount = await credits.balance(guild, checkAccount);
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
-
-  await upsertGuildMember(guild, user);
-
-  const embedSuccess = new EmbedBuilder()
-    .setTitle(":credit_card:︱Balance")
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
-    .setTimestamp(new Date());
-
-  const upsertGuildMemberCredit = await prisma.guildMemberCredit.upsert({
-    where: {
-      userId_guildId: {
-        userId: (target || user).id,
-        guildId: guild.id,
-      },
-    },
-    update: {},
-    create: {
-      guildMember: {
-        connectOrCreate: {
-          create: {
-            userId: (target || user).id,
-            guildId: guild.id,
-          },
-          where: {
-            userId_guildId: {
-              userId: (target || user).id,
-              guildId: guild.id,
-            },
-          },
-        },
-      },
-    },
-    include: { guildMember: true },
-  });
-
-  logger.silly(upsertGuildMemberCredit);
-
-  await upsertGuildMember(guild, user);
-
-  // 6. Send embed.
   await interaction.editReply({
     embeds: [
-      embedSuccess.setDescription(
-        target
-          ? `${target} has ${upsertGuildMemberCredit.balance} coins in his account.`
-          : `You have ${upsertGuildMemberCredit.balance} coins in your account.`
-      ),
+      new EmbedBuilder()
+        .setTimestamp(new Date())
+        .setAuthor({ name: "💳 Balance" })
+        .setColor("#895aed")
+        .setFooter({
+          text: `Requested by ${user.username}`,
+          iconURL: user.displayAvatarURL(),
+        }).setDescription(`
+   ${checkAccount.id !== user.id ? `${checkAccount} has` : `You have`} ${
+        creditAccount.balance
+      } credits.`),
     ],
   });
 };

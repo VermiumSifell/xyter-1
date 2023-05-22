@@ -16,16 +16,16 @@ export default async (
         },
       },
       create: {
-        guildMember: {
+        GuildMember: {
           connectOrCreate: {
             create: {
-              user: {
+              User: {
                 connectOrCreate: {
                   create: { id: fromUser.id },
                   where: { id: fromUser.id },
                 },
               },
-              guild: {
+              Guild: {
                 connectOrCreate: {
                   create: { id: guild.id },
                   where: { id: guild.id },
@@ -33,16 +33,16 @@ export default async (
               },
             },
             where: {
-              userId_guildId: { userId: fromUser.id, guildId: guild.id },
+              guildId_userId: { guildId: guild.id, userId: fromUser.id },
             },
           },
         },
         balance: -amount,
       },
       where: {
-        userId_guildId: {
-          userId: fromUser.id,
+        guildId_userId: {
           guildId: guild.id,
+          userId: fromUser.id,
         },
       },
     });
@@ -62,31 +62,31 @@ export default async (
         },
       },
       create: {
-        guildMember: {
+        GuildMember: {
           connectOrCreate: {
             create: {
-              user: {
+              User: {
                 connectOrCreate: {
                   create: { id: toUser.id },
                   where: { id: toUser.id },
                 },
               },
-              guild: {
+              Guild: {
                 connectOrCreate: {
                   create: { id: guild.id },
                   where: { id: guild.id },
                 },
               },
             },
-            where: { userId_guildId: { userId: toUser.id, guildId: guild.id } },
+            where: { guildId_userId: { guildId: guild.id, userId: toUser.id } },
           },
         },
         balance: amount,
       },
       where: {
-        userId_guildId: {
-          userId: toUser.id,
+        guildId_userId: {
           guildId: guild.id,
+          userId: toUser.id,
         },
       },
     });

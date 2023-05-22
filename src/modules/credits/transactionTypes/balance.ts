@@ -1,19 +1,11 @@
 import { Guild, User } from "discord.js";
 import prisma from "../../../handlers/prisma";
-import validateTransaction from "../validateTransaction";
 
-export default async (guild: Guild, user: User, amount: number) => {
+export default async (guild: Guild, user: User) => {
   return await prisma.$transaction(async (tx) => {
-    // 1. Check if the transaction is valid.
-    validateTransaction(guild, user, amount);
-
-    // 2. Make the transaction.
+    // 1. Make the transaction.
     const recipient = await tx.guildMemberCredit.upsert({
-      update: {
-        balance: {
-          decrement: amount,
-        },
-      },
+      update: {},
       create: {
         GuildMember: {
           connectOrCreate: {
@@ -34,7 +26,6 @@ export default async (guild: Guild, user: User, amount: number) => {
             where: { guildId_userId: { guildId: guild.id, userId: user.id } },
           },
         },
-        balance: -amount,
       },
       where: {
         guildId_userId: {
@@ -44,11 +35,10 @@ export default async (guild: Guild, user: User, amount: number) => {
       },
     });
 
-    // 3. Verify that the recipient credits are not below zero.
-    if (recipient.balance < -100)
-      throw new Error("User do not have enough credits");
+    // 2. Verify that the recipient actually is created.
+    if (!recipient) throw new Error("No recipient available");
 
-    // 4. Return the recipient.
+    // 3. Return the recipient.
     return recipient;
   });
 };

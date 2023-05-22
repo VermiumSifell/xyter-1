@@ -1,10 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 // Subcommands
-import {
-  builder as BalanceBuilder,
-  execute as BalanceExecute,
-} from "./subcommands/balance";
+import * as balance from "./subcommands/balance";
 import {
   builder as GiftBuilder,
   execute as GiftExecute,
@@ -25,7 +22,7 @@ export const builder = new SlashCommandBuilder()
   .setDMPermission(false)
 
   // Modules
-  .addSubcommand(BalanceBuilder)
+  .addSubcommand(balance.builder)
   .addSubcommand(GiftBuilder)
   .addSubcommand(TopBuilder)
   .addSubcommand(WorkBuilder);
@@ -34,7 +31,7 @@ export const builder = new SlashCommandBuilder()
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   switch (interaction.options.getSubcommand()) {
     case "balance":
-      await BalanceExecute(interaction);
+      await balance.execute(interaction);
       break;
     case "gift":
       await GiftExecute(interaction);

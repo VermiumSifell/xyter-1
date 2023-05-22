@@ -5,12 +5,11 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from "discord.js";
-import getEmbedData from "../../../../helpers/getEmbedConfig";
 
 export default async (interaction: ChatInputCommandInteraction) => {
-  const { errorColor, footerText, footerIcon } = await getEmbedData(
-    interaction.guild
-  );
+  //  const { errorColor, footerText, footerIcon } = await getEmbedData(
+  //  interaction.guild
+  //);
 
   if (!interaction.isCommand()) return;
   const { client, commandName } = interaction;
@@ -32,9 +31,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         new EmbedBuilder()
           .setTitle(`:no_entry_sign:︱Your request failed`)
           .setDescription(`${error.message}`)
-          .setColor(errorColor)
-          .setTimestamp(new Date())
-          .setFooter({ text: footerText, iconURL: footerIcon }),
+          .setTimestamp(new Date()),
       ],
       components: [buttons],
     });

@@ -2,7 +2,6 @@ import { BaseInteraction, InteractionType } from "discord.js";
 import upsertGuildMember from "../../helpers/upsertGuildMember";
 import { IEventOptions } from "../../interfaces/EventOptions";
 import logger from "../../middlewares/logger";
-import sendAuditEntry from "./components/sendAuditEntry";
 import button from "./handlers/button";
 import chatInputCommand from "./handlers/chatInputCommand";
 
@@ -42,5 +41,5 @@ export const execute = async (interaction: BaseInteraction) => {
       throw new Error("Unknown interaction type");
   }
 
-  await sendAuditEntry(interaction);
+  //  await sendAuditEntry(interaction);
 };

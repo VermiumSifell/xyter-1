@@ -4,69 +4,114 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-
-import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../helpers/getEmbedConfig";
-import upsertGuildMember from "../../../../helpers/upsertGuildMember";
-import cooldown from "../../../../middlewares/cooldown";
-import logger from "../../../../middlewares/logger";
 import economy from "../../../../modules/credits";
+import jobs from "./jobs";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
-  return command.setName("work").setDescription(`Work to earn credits`);
+  return command
+    .setName("work")
+    .setDescription("Put in the hustle and earn some credits!");
 };
 
+const fallbackEmoji = "💼"; // Fallback work emoji
+
 export const execute = async (interaction: CommandInteraction) => {
-  const { guild, user, commandId } = interaction;
+  const { guild, user } = interaction;
 
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
 
-  if (!guild) throw new Error("Guild not found");
-  if (!user) throw new Error("User not found");
+  if (!guild) {
+    throw new Error(
+      "Oops! It seems like you're not part of a guild. Join a guild to use this command!"
+    );
+  }
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
-
-  await upsertGuildMember(guild, user);
-
-  const embedSuccess = new EmbedBuilder()
-    .setTitle(":credit_card:︱Work")
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
-    .setTimestamp(new Date());
+  if (!user) {
+    throw new Error(
+      "Oops! It looks like we couldn't find your user information. Please try again or contact support for assistance."
+    );
+  }
 
   const chance = new Chance();
 
-  const createGuild = await prisma.guildConfigCredits.upsert({
-    where: {
-      id: guild.id,
-    },
-    update: {},
-    create: {
-      id: guild.id,
-    },
-  });
-  logger.silly(createGuild);
-  if (!createGuild) throw new Error("Guild not found");
+  const getRandomWork = () => {
+    return chance.pickone(jobs);
+  };
 
-  await cooldown(guild, user, commandId, createGuild.workTimeout);
+  const baseCreditsRate = getRandomWork().creditsRate; // Get the base rate of credits earned per work action
+  const bonusChance = 30; // Higher chance of earning a bonus
+  const penaltyChance = 10; // Lower chance of receiving a penalty
 
-  const creditsEarned = chance.integer({
-    min: 0,
-    max: createGuild.workRate,
-  });
+  const baseCreditsEarned = chance.integer({ min: 1, max: baseCreditsRate }); // Generate a random base number of credits earned
 
-  const upsertGuildMemberResult = await economy.give(
-    guild,
-    user,
-    creditsEarned
+  let bonusCredits = 0; // Initialize bonus credits
+  let penaltyCredits = 0; // Initialize penalty credits
+  let creditsEarned = baseCreditsEarned; // Set the initial earned credits to the base amount
+  let work;
+
+  if (chance.bool({ likelihood: bonusChance })) {
+    // Earn bonus credits
+    const bonusMultiplier = chance.floating({ min: 1.1, max: 1.5 }); // Get a random multiplier for the bonus credits
+    bonusCredits = Math.ceil(baseCreditsEarned * bonusMultiplier); // Calculate the bonus credits
+    creditsEarned = baseCreditsEarned + bonusCredits; // Update the total earned credits
+    work = getRandomWork(); // Get a random work type
+  } else if (chance.bool({ likelihood: penaltyChance })) {
+    // Receive a penalty
+    const penaltyMultiplier = chance.floating({ min: 0.5, max: 0.8 }); // Get a random multiplier for the penalty credits
+    penaltyCredits = Math.ceil(baseCreditsEarned * penaltyMultiplier); // Calculate the penalty credits
+    creditsEarned = baseCreditsEarned - penaltyCredits; // Update the total earned credits
+    work = getRandomWork(); // Get a random work type
+  } else {
+    // Earn base credits
+    work = getRandomWork(); // Get a random work type
+  }
+
+  // Descriptions
+  const descriptions = [];
+
+  // Work Description
+  descriptions.push(
+    `Mission complete! You've earned **${baseCreditsEarned} credits**! 🎉`
   );
 
-  await interaction.editReply({
-    embeds: [
-      embedSuccess.setDescription(
-        `You worked and earned **${creditsEarned}** credits! You now have **${upsertGuildMemberResult.balance}** credits. :tada:`
-      ),
-    ],
-  });
+  // Bonus Description
+  if (bonusCredits > 0) {
+    descriptions.push(`💰 Bonus: **${bonusCredits} credits**!`);
+  }
+
+  // Penalty Description
+  if (penaltyCredits !== 0) {
+    descriptions.push(`😱 Penalty: **${penaltyCredits} credits** deducted.`);
+  }
+
+  // Total Credits Description
+  descriptions.push(
+    `Total earnings: **${creditsEarned} credits**. Keep up the hustle!`
+  );
+
+  await economy.give(guild, user, creditsEarned); // Give the user the earned credits
+
+  // User Balance
+  const userBalance = await economy.balance(guild, user);
+
+  const embedSuccess = new EmbedBuilder()
+    .setColor("#895aed")
+    .setAuthor({
+      name: `${user.username}'s Work Result`,
+      iconURL: user.displayAvatarURL(),
+    })
+    .setTimestamp()
+    .setDescription(descriptions.join("\n"))
+    .setFooter({
+      text: `You just worked as a ${work.name}! ${
+        work?.emoji || fallbackEmoji
+      }`,
+    })
+    .addFields({
+      name: "New Balance",
+      value: `${userBalance.balance} credits`,
+    });
+
+  await interaction.editReply({ embeds: [embedSuccess] }); // Send the result as an embed message
 };
