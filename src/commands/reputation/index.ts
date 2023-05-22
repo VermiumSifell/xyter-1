@@ -1,6 +1,16 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import {
+  SubcommandHandlers,
+  executeSubcommand,
+} from "../../handlers/executeSubcommand";
+
 import * as check from "./subcommands/check";
 import * as repute from "./subcommands/repute";
+
+const subcommandHandlers: SubcommandHandlers = {
+  repute: repute.execute,
+  check: check.execute,
+};
 
 export const builder = new SlashCommandBuilder()
   .setName("reputation")
@@ -12,14 +22,5 @@ export const builder = new SlashCommandBuilder()
   .addSubcommand(check.builder);
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  switch (interaction.options.getSubcommand()) {
-    case "repute":
-      await repute.execute(interaction);
-      break;
-    case "check":
-      await check.execute(interaction);
-      break;
-    default:
-      break;
-  }
+  await executeSubcommand(interaction, subcommandHandlers);
 };
