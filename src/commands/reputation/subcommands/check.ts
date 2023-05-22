@@ -3,10 +3,8 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import prisma from "../../../handlers/prisma";
 import deferReply from "../../../helpers/deferReply";
-import getEmbedConfig from "../../../helpers/getEmbedConfig";
-import logger from "../../../middlewares/logger";
+import * as reputation from "../../../modules/reputation";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -21,79 +19,34 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
 
-  const { options, guild, user } = interaction;
+  const { options, user } = interaction;
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
+  const checkUser = options.getUser("user") || user;
 
-  const checkUser = options.getUser("user");
-
-  if (!guild) throw new Error("Server unavailable");
   if (!user) throw new Error("User unavailable");
 
-  const createGuildMember = await prisma.guildMember.upsert({
-    where: {
-      userId_guildId: {
-        userId: (checkUser || user).id,
-        guildId: guild.id,
-      },
-    },
-    update: {},
-    create: {
-      user: {
-        connectOrCreate: {
-          create: {
-            id: (checkUser || user).id,
-          },
-          where: {
-            id: (checkUser || user).id,
-          },
-        },
-      },
-      guild: {
-        connectOrCreate: {
-          create: {
-            id: guild.id,
-          },
-          where: {
-            id: guild.id,
-          },
-        },
-      },
-    },
-    include: {
-      user: true,
-      guild: true,
-    },
-  });
-
-  logger.silly(createGuildMember);
-
-  const reputationType = (reputation: number) => {
-    if (reputation < 0) return `negative reputation of ${reputation}`;
-    if (reputation > 0) return `positive reputation of ${reputation}`;
-    return "neutral reputation";
-  };
+  const userReputation = await reputation.check(checkUser);
 
   const interactionEmbed = new EmbedBuilder()
-    .setTitle(
-      checkUser
-        ? `:loudspeaker:︱Showing ${checkUser.username}'s reputation`
-        : ":loudspeaker:︱Showing your reputation"
-    )
+    .setAuthor({
+      name: `Showing ${checkUser.username}'s reputation`,
+    })
     .setDescription(
-      checkUser
-        ? `${checkUser} have a ${reputationType(
-            createGuildMember.user.reputationsEarned
-          )}`
-        : `You have a ${reputationType(
-            createGuildMember.user.reputationsEarned
-          )}`
+      `**User:** ${checkUser}\n\n` +
+        `**Reputation:**\n` +
+        `- Negative: ${userReputation.negative}\n` +
+        `- Positive: ${userReputation.positive}\n` +
+        `- Total: ${userReputation.total}`
     )
+    .setFooter({
+      text: `Requested by ${user.username}`,
+      iconURL: user.displayAvatarURL(),
+    })
+    .setThumbnail(checkUser.displayAvatarURL())
     .setTimestamp()
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon });
+    .setColor("#895aed");
 
   await interaction.editReply({
     embeds: [interactionEmbed],

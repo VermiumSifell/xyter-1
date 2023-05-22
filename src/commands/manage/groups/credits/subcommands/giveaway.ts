@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
 import getEmbedConfig from "../../../../../helpers/getEmbedConfig";
-import createVoucher from "../../../../../modules/cpgg/features/createVoucher";
+import createVoucher from "../../../../../modules/ctrlpanel/features/createVoucher";
 
 // Function
 export const builder = (command: SlashCommandSubcommandBuilder) => {

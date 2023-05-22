@@ -9,8 +9,8 @@ import {
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
 import deferReply from "../../../helpers/deferReply";
-import createVoucher from "../../../modules/cpgg/features/createVoucher";
 import credits from "../../../modules/credits";
+import createVoucher from "../../../modules/ctrlpanel/features/createVoucher";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command

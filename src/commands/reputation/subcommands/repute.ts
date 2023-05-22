@@ -3,11 +3,8 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import getEmbedConfig from "../../../helpers/getEmbedConfig";
-
-import prisma from "../../../handlers/prisma";
 import deferReply from "../../../helpers/deferReply";
-import cooldown from "../../../middlewares/cooldown";
+import * as reputation from "../../../modules/reputation";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -26,23 +23,18 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
         .setRequired(true)
         .addChoices(
           { name: "Positive", value: "positive" },
-          {
-            name: "Negative",
-            value: "negative",
-          }
+          { name: "Negative", value: "negative" }
         )
     );
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  const { options, user, guild, commandId } = interaction;
+  const { options, user, guild } = interaction;
   await deferReply(interaction, true);
   if (!guild) throw new Error("This command can only be used in guilds");
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
-
   const reputationUser = options.getUser("user");
-  const reputationType = options.getString("type");
+  const reputationType = options.getString("type", true);
 
   if (!reputationUser) {
     throw new Error(
@@ -50,67 +42,33 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     );
   }
 
+  if (!(reputationType === "positive" || reputationType === "negative")) {
+    throw new Error("Invalid reputation type");
+  }
+
   if (user.id === reputationUser.id) {
     throw new Error("It is not possible to give yourself reputation.");
   }
 
-  await cooldown(
-    guild,
-    user,
-    commandId,
-    parseInt(process.env.REPUTATION_TIMEOUT)
-  );
+  await reputation.repute(reputationUser, reputationType);
 
-  switch (reputationType) {
-    case "positive": {
-      await prisma.user.upsert({
-        where: {
-          id: reputationUser.id,
-        },
-        update: {
-          reputationsEarned: {
-            increment: 1,
-          },
-        },
-        create: {
-          id: reputationUser.id,
-          reputationsEarned: 1,
-        },
-      });
-      break;
-    }
-    case "negative": {
-      await prisma.user.upsert({
-        where: {
-          id: reputationUser.id,
-        },
-        update: {
-          reputationsEarned: {
-            decrement: 1,
-          },
-        },
-        create: {
-          id: reputationUser.id,
-          reputationsEarned: -1,
-        },
-      });
-      break;
-    }
-    default: {
-      throw new Error("Invalid reputation type");
-    }
+  let emoji = "";
+  if (reputationType === "positive") {
+    emoji = "😊";
+  } else if (reputationType === "negative") {
+    emoji = "😔";
   }
 
-  const interactionEmbed = new EmbedBuilder()
-    .setTitle(`:loudspeaker:︱Reputing ${reputationUser.tag}`)
-    .setDescription(
-      `You have successfully given a ${reputationType} reputation to ${reputationUser}!`
-    )
-    .setTimestamp()
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon });
+  const interactionMessage = `You have successfully given ${emoji} ${reputationType} reputation to ${reputationUser}!`;
 
-  await interaction.editReply({
-    embeds: [interactionEmbed],
-  });
+  const interactionEmbed = new EmbedBuilder()
+    .setAuthor({
+      name: `Reputing ${reputationUser.username}`,
+      iconURL: reputationUser.displayAvatarURL(),
+    })
+    .setDescription(interactionMessage)
+    .setTimestamp()
+    .setColor("#895aed");
+
+  await interaction.editReply({ embeds: [interactionEmbed] });
 };

@@ -11,20 +11,13 @@ datasource db {
 }
 
 model Guild {
-  id                      String                   @unique
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  GuildMember             GuildMember[]
-  GuildSettings           GuildSettings?
-  GuildEmbedSettings      GuildEmbedSettings?
-  GuildCreditsSettings    GuildCreditsSettings?
-  GuildPointsSettings     GuildPointsSettings?
-  GuildReputationSettings GuildReputationSettings?
-  GuildCountersSettings   GuildCountersSettings?
-  GuildAuditsSettings     GuildAuditsSettings?
-  GuildShopSettings       GuildShopSettings?
-  GuildWelcomeSettings    GuildWelcomeSettings?
-  ApiCredentials          ApiCredentials[]
+  id                   String                @unique
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  GuildMember          GuildMember[]
+  GuildSettings        GuildSettings?
+  GuildCreditsSettings GuildCreditsSettings?
+  ApiCredentials       ApiCredentials[]
 }
 
 model User {
@@ -33,18 +26,18 @@ model User {
   updatedAt      DateTime         @updatedAt
   GuildMember    GuildMember[]
   ApiCredentials ApiCredentials[]
+  UserReputation UserReputation[]
 }
 
 model GuildMember {
-  guildId               String
-  userId                String
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @default(now())
-  Guild                 Guild                  @relation(fields: [guildId], references: [id])
-  User                  User                   @relation(fields: [userId], references: [id])
-  GuildMemberCredit     GuildMemberCredit?
-  GuildMemberReputation GuildMemberReputation?
-  ApiCredentials        ApiCredentials[]
+  guildId           String
+  userId            String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now())
+  Guild             Guild              @relation(fields: [guildId], references: [id])
+  User              User               @relation(fields: [userId], references: [id])
+  GuildMemberCredit GuildMemberCredit?
+  ApiCredentials    ApiCredentials[]
 
   @@unique([guildId, userId])
 }
@@ -61,18 +54,15 @@ model GuildMemberCredit {
   @@unique([guildId, userId])
 }
 
-model GuildMemberReputation {
-  guildId   String
-  userId    String
+model UserReputation {
+  id        String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  guildMember GuildMember @relation(fields: [guildId, userId], references: [guildId, userId])
+  User User @relation(fields: [id], references: [id])
 
   negative Int @default(0)
   positive Int @default(0)
-
-  @@unique([guildId, userId])
 }
 
 model GuildSettings {
@@ -82,10 +72,8 @@ model GuildSettings {
 
   guild Guild @relation(fields: [id], references: [id])
 
-  creditsSettings           GuildCreditsSettings?    @relation(fields: [guildCreditsSettingsId], references: [id])
-  reputationSettings        GuildReputationSettings? @relation(fields: [guildReputationSettingsId], references: [id])
-  guildCreditsSettingsId    String?
-  guildReputationSettingsId String?
+  creditsSettings        GuildCreditsSettings? @relation(fields: [guildCreditsSettingsId], references: [id])
+  guildCreditsSettingsId String?
 }
 
 model GuildCreditsSettings {
@@ -104,17 +92,6 @@ model GuildCreditsSettings {
   workTimeout       Int             @default(86400)
   minimumLength     Int             @default(5)
   GuildSettings     GuildSettings[]
-}
-
-model GuildReputationSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status        Boolean         @default(false)
-  GuildSettings GuildSettings[]
 }
 
 model ApiCredentials {
