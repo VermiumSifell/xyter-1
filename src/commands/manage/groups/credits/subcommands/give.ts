@@ -6,7 +6,6 @@ import {
 } from "discord.js";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../../helpers/getEmbedConfig";
 import economy from "../../../../../modules/credits";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -28,12 +27,13 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  const { guild, options } = interaction;
+  const { guild, options, user } = interaction;
 
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
+  const successColor = "#895aed";
+  const footerText = `Action by ${user.username}`;
 
   if (!guild)
     throw new Error("We could not get the current guild from discord.");
@@ -49,12 +49,12 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const embedSuccess = new EmbedBuilder()
     .setTitle(":toolbox:︱Give")
     .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
+    .setFooter({ text: footerText })
     .setTimestamp(new Date());
 
   await economy.give(guild, discordReceiver, creditsAmount);
 
-  return await interaction.editReply({
+  await interaction.editReply({
     embeds: [
       embedSuccess.setDescription(`Successfully gave ${creditsAmount} credits`),
     ],

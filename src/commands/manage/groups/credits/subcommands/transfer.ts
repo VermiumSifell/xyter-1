@@ -63,7 +63,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await economy.transfer(guild, optionFromUser, optionToUser, optionAmount);
 
-  return interaction.editReply({
+  interaction.editReply({
     embeds: [
       new EmbedBuilder()
         .setTitle("[:toolbox:] Manage - Credits (Transfer)")

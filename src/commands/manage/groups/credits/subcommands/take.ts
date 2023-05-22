@@ -54,7 +54,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setFooter({ text: footerText, iconURL: footerIcon })
     .setTimestamp(new Date());
 
-  return await interaction.editReply({
+  await interaction.editReply({
     embeds: [
       embedSuccess.setDescription(
         `Took ${optionAmount} credits from ${discordReceiver}.`

@@ -1,7 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandSubcommandGroupBuilder,
-} from "discord.js";
+import { SlashCommandSubcommandGroupBuilder } from "discord.js";
 import * as give from "./subcommands/give";
 import * as giveaway from "./subcommands/giveaway";
 import * as set from "./subcommands/set";
@@ -19,24 +16,10 @@ export const builder = (group: SlashCommandSubcommandGroupBuilder) => {
     .addSubcommand(giveaway.builder);
 };
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
-  switch (interaction.options.getSubcommand()) {
-    case "give":
-      await give.execute(interaction);
-      break;
-    case "set":
-      await set.execute(interaction);
-      break;
-    case "take":
-      await take.execute(interaction);
-      break;
-    case "transfer":
-      await transfer.execute(interaction);
-      break;
-    case "giveaway":
-      await giveaway.execute(interaction);
-      break;
-    default:
-      throw new Error("Invalid subcommand");
-  }
+export const subcommands = {
+  give,
+  set,
+  take,
+  transfer,
+  giveaway,
 };

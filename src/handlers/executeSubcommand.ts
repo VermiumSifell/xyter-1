@@ -16,7 +16,7 @@ export const executeSubcommand = async (
   subcommandGroupHandlers?: SubcommandGroupHandlers
 ) => {
   const subcommandGroup = interaction.options.getSubcommandGroup();
-  if (subcommandGroup) {
+  if (subcommandGroupHandlers && subcommandGroup) {
     const handlers = subcommandGroupHandlers?.[subcommandGroup];
     if (handlers) {
       await executeSubcommand(interaction, handlers);
@@ -28,6 +28,7 @@ export const executeSubcommand = async (
 
   const subcommand = interaction.options.getSubcommand();
   const handler = subcommandHandlers[subcommand];
+
   if (handler) {
     await handler(interaction);
   } else {
