@@ -10,9 +10,7 @@ import deferReply from "../../../../helpers/deferReply";
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
     .setName("lookup")
-    .setDescription(
-      "Lookup a domain or ip. (Request sent over HTTP, proceed with caution!)"
-    )
+    .setDescription("Lookup a domain or ip.")
     .addStringOption((option) =>
       option
         .setName("query")

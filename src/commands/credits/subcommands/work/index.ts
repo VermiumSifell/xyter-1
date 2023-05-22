@@ -45,9 +45,6 @@ export const execute = async (interaction: CommandInteraction) => {
     where: { id: guild.id },
   });
 
-  console.log(guildCreditsSettings?.workBonusChance);
-  console.log(guildCreditsSettings?.workPenaltyChance);
-
   const baseCreditsRate = getRandomWork().creditsRate; // Get the base rate of credits earned per work action
   const bonusChance = guildCreditsSettings?.workBonusChance || 30; // Retrieve bonus chance from guild settings or use default value
   const penaltyChance = guildCreditsSettings?.workPenaltyChance || 10; // Retrieve penalty chance from guild settings or use default value
