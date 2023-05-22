@@ -54,6 +54,4 @@ export const execute = async (interaction: BaseInteraction) => {
       throw new Error(errorMessage);
     }
   }
-
-  //  await sendAuditEntry(interaction);
 };

@@ -6,39 +6,36 @@ import logger from "../middlewares/logger";
 export default async (client: Client) => {
   const profiler = logger.startTimer();
 
-  await checkDirectory("events").then((eventNames) => {
-    const importEvent = async (name: string) => {
-      await import(`../events/${name}`).then((event: IEvent) => {
-        const eventExecutor = async (...args: Promise<void>[]) => {
-          await event.execute(...args);
-        };
+  const eventNames = await checkDirectory("events");
 
-        switch (event.options.type) {
-          case "once":
-            client.once(name, eventExecutor);
-            break;
+  const importEvent = async (name: string) => {
+    const event = (await import(`../events/${name}`)) as IEvent;
 
-          case "on":
-            client.on(name, eventExecutor);
-            break;
-          default:
-            throw new Error(`Unknown event type`);
-        }
-
-        logger.debug({
-          eventName: name,
-          type: event.options.type,
-          message: `Listening to event '${name}'`,
-        });
-
-        return event;
-      });
+    const eventExecutor = async (...args: Promise<void>[]) => {
+      await event.execute(...args);
     };
 
-    eventNames.forEach(async (eventName) => {
-      await importEvent(eventName);
+    switch (event.options.type) {
+      case "once":
+        client.once(name, eventExecutor);
+        break;
+      case "on":
+        client.on(name, eventExecutor);
+        break;
+      default:
+        throw new Error(`Unknown event type: ${event.options.type}`);
+    }
+
+    logger.debug({
+      eventName: name,
+      type: event.options.type,
+      message: `Listening to event '${name}'`,
     });
-  });
+
+    return event;
+  };
+
+  await Promise.all(eventNames.map(importEvent));
 
   return profiler.done({
     message: "Successfully listening to all events!",

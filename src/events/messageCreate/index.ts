@@ -8,5 +8,4 @@ export const options: IEventOptions = {
 
 export const execute = async (message: Message) => {
   await earnCredits(message);
-  //  await updateCounter(message);
 };
