@@ -1,26 +1,21 @@
-// Dependencies
-// Helpers
-// Models
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../../helpers/getEmbedConfig";
 import economy from "../../../../../modules/credits";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
     .setName("set")
-    .setDescription("Set the amount of credits a user has.")
+    .setDescription("Set credits to a user.")
     .addUserOption((option) =>
       option
         .setName("user")
-        .setDescription("The user to set the amount of credits for.")
+        .setDescription("The user to set credits to.")
         .setRequired(true)
     )
     .addIntegerOption((option) =>
@@ -31,35 +26,39 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     );
 };
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
-  const { options, guild } = interaction;
+export const execute = async (
+  interaction: ChatInputCommandInteraction
+): Promise<void> => {
+  const { guild, options, user } = interaction;
 
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
-  if (!guild) throw new Error(`We could not find this guild.`);
-  if (!options) throw new Error(`We could not find the options.`);
+  if (!guild) {
+    throw new Error("We could not get the current guild from Discord.");
+  }
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
+  const discordReceiver = options.getUser("user");
+  const creditsAmount = options.getInteger("amount");
 
-  const discordUser = options.getUser("user");
-  const creditAmount = options.getInteger("amount");
-  if (typeof creditAmount !== "number") throw new Error("Amount is not set.");
-  if (!discordUser) throw new Error("User is not specified");
-
-  await economy.set(guild, discordUser, creditAmount);
+  if (!discordReceiver || typeof creditsAmount !== "number") {
+    await interaction.editReply("Invalid user or credit amount provided.");
+    return;
+  }
 
   const embedSuccess = new EmbedBuilder()
-    .setTitle(":toolbox:︱Set")
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
-    .setTimestamp(new Date());
+    .setColor("#895aed") // Blue color for an administrative look
+    .setAuthor({ name: "Administrative Action" }) // Update the author name
+    .setDescription(
+      `Successfully set ${creditsAmount} credits to the user. This is an administrative action.`
+    ) // Modify the description to convey authority
+    .setFooter({
+      text: `Action by ${user.username}`,
+      iconURL: user.displayAvatarURL(),
+    })
+    .setTimestamp();
 
-  await interaction.editReply({
-    embeds: [
-      embedSuccess.setDescription(
-        `Set **${discordUser}**'s credits to **${creditAmount}**.`
-      ),
-    ],
-  });
+  await economy.set(guild, discordReceiver, creditsAmount);
+
+  await interaction.editReply({ embeds: [embedSuccess] });
 };

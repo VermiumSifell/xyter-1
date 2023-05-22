@@ -1,15 +1,11 @@
-// Dependencies
-// Models
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import getEmbedConfig from "../../../../../helpers/getEmbedConfig";
 import economy from "../../../../../modules/credits";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -30,35 +26,39 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     );
 };
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
-  const { guild, options } = interaction;
+export const execute = async (
+  interaction: ChatInputCommandInteraction
+): Promise<void> => {
+  const { guild, options, user } = interaction;
 
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
-  if (!guild) throw new Error("Invalid guild.");
-  if (!options) throw new Error("Invalid options.");
-
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(guild);
+  if (!guild) {
+    throw new Error("We could not get the current guild from Discord.");
+  }
 
   const discordReceiver = options.getUser("user");
-  const optionAmount = options.getInteger("amount");
-  if (typeof optionAmount !== "number") throw new Error("Invalid amount.");
-  if (!discordReceiver) throw new Error("Invalid user.");
+  const creditsAmount = options.getInteger("amount");
 
-  await economy.take(guild, discordReceiver, optionAmount);
+  if (!discordReceiver || typeof creditsAmount !== "number") {
+    await interaction.editReply("Invalid user or credit amount provided.");
+    return;
+  }
 
   const embedSuccess = new EmbedBuilder()
-    .setTitle(":toolbox:︱Take")
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon })
-    .setTimestamp(new Date());
+    .setColor("#895aed") // Blue color for an administrative look
+    .setAuthor({ name: "Administrative Action" }) // Update the author name
+    .setDescription(
+      `Successfully took ${creditsAmount} credits to the user. This is an administrative action.`
+    ) // Modify the description to convey authority
+    .setFooter({
+      text: `Action by ${user.username}`,
+      iconURL: user.displayAvatarURL(),
+    })
+    .setTimestamp();
 
-  await interaction.editReply({
-    embeds: [
-      embedSuccess.setDescription(
-        `Took ${optionAmount} credits from ${discordReceiver}.`
-      ),
-    ],
-  });
+  await economy.take(guild, discordReceiver, creditsAmount);
+
+  await interaction.editReply({ embeds: [embedSuccess] });
 };

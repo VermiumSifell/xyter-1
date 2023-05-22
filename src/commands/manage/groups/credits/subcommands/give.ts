@@ -26,37 +26,39 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     );
 };
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
+export const execute = async (
+  interaction: ChatInputCommandInteraction
+): Promise<void> => {
   const { guild, options, user } = interaction;
 
   await deferReply(interaction, false);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
-  const successColor = "#895aed";
-  const footerText = `Action by ${user.username}`;
-
-  if (!guild)
-    throw new Error("We could not get the current guild from discord.");
-  if (!options) throw new Error("We could not get the options from discord.");
+  if (!guild) {
+    throw new Error("We could not get the current guild from Discord.");
+  }
 
   const discordReceiver = options.getUser("user");
   const creditsAmount = options.getInteger("amount");
-  if (typeof creditsAmount !== "number")
-    throw new Error("You need to provide a credit amount.");
-  if (!discordReceiver)
-    throw new Error("We could not get the receiving user from Discord");
+
+  if (!discordReceiver || typeof creditsAmount !== "number") {
+    await interaction.editReply("Invalid user or credit amount provided.");
+    return;
+  }
 
   const embedSuccess = new EmbedBuilder()
-    .setTitle(":toolbox:︱Give")
-    .setColor(successColor)
-    .setFooter({ text: footerText })
-    .setTimestamp(new Date());
+    .setColor("#895aed") // Blue color for an administrative look
+    .setAuthor({ name: "Administrative Action" }) // Update the author name
+    .setDescription(
+      `Successfully granted ${creditsAmount} credits to the user. This is an administrative action.`
+    ) // Modify the description to convey authority
+    .setFooter({
+      text: `Action by ${user.username}`,
+      iconURL: user.displayAvatarURL(),
+    })
+    .setTimestamp();
 
   await economy.give(guild, discordReceiver, creditsAmount);
 
-  await interaction.editReply({
-    embeds: [
-      embedSuccess.setDescription(`Successfully gave ${creditsAmount} credits`),
-    ],
-  });
+  await interaction.editReply({ embeds: [embedSuccess] });
 };
