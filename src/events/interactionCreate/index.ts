@@ -27,14 +27,11 @@ export const execute = async (interaction: BaseInteraction) => {
     case InteractionType.ApplicationCommand: {
       if (interaction.isChatInputCommand()) {
         await chatInputCommand(interaction);
-        return;
-      }
-
-      if (interaction.isButton()) {
+      } else if (interaction.isButton()) {
         await button(interaction);
-        return;
+      } else {
+        throw new Error("Unknown interaction type");
       }
-
       break;
     }
     default:

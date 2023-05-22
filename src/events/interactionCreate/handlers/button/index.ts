@@ -15,9 +15,13 @@ export default async (interaction: ButtonInteraction) => {
 
   const currentButton = await import(`../../../buttons/${customId}`);
 
-  if (!currentButton) throw new Error(`Unknown button ${customId}`);
+  if (!currentButton) {
+    throw new Error(`Unknown button ${customId}`);
+  }
 
-  await currentButton.execute(interaction).catch((error: Error) => {
+  try {
+    await currentButton.execute(interaction);
+  } catch (error: any) {
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel("Report Problem")
@@ -26,16 +30,18 @@ export default async (interaction: ButtonInteraction) => {
         .setURL("https://discord.zyner.org")
     );
 
+    const errorEmbed = new EmbedBuilder()
+      .setAuthor({ name: "⚠️ | Request Failed" })
+      .setDescription(
+        `An error occurred while processing your request. Please try again later.`
+      )
+      .addFields({ name: "Error Details", value: `\`${error.message}\`` })
+      .setColor("#895aed")
+      .setTimestamp();
+
     return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(`:no_entry_sign:︱Your request failed`)
-          .setDescription(`${error.message}`)
-          .setColor(errorColor)
-          .setTimestamp(new Date())
-          .setFooter({ text: footerText, iconURL: footerIcon }),
-      ],
+      embeds: [errorEmbed],
       components: [buttons],
     });
-  });
+  }
 };

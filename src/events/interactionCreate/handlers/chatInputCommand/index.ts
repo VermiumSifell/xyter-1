@@ -7,19 +7,17 @@ import {
 } from "discord.js";
 
 export default async (interaction: ChatInputCommandInteraction) => {
-  //  const { errorColor, footerText, footerIcon } = await getEmbedData(
-  //  interaction.guild
-  //);
-
   if (!interaction.isCommand()) return;
   const { client, commandName } = interaction;
 
   const currentCommand = client.commands.get(commandName);
-  if (!currentCommand) throw new Error("Command unavailable");
+  if (!currentCommand) {
+    throw new Error("Command unavailable");
+  }
 
-  console.log(currentCommand);
-
-  await currentCommand.execute(interaction).catch((error: Error) => {
+  try {
+    await currentCommand.execute(interaction);
+  } catch (error: any) {
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel("Report Problem")
@@ -28,14 +26,18 @@ export default async (interaction: ChatInputCommandInteraction) => {
         .setURL("https://discord.zyner.org")
     );
 
+    const errorEmbed = new EmbedBuilder()
+      .setAuthor({ name: "⚠️ | Request Failed" })
+      .setDescription(
+        `An error occurred while processing your request. Please try again later.`
+      )
+      .addFields({ name: "Error Details", value: `\`${error.message}\`` })
+      .setColor("#895aed")
+      .setTimestamp();
+
     return interaction.editReply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(`:no_entry_sign:︱Your request failed`)
-          .setDescription(`${error.message}`)
-          .setTimestamp(new Date()),
-      ],
+      embeds: [errorEmbed],
       components: [buttons],
     });
-  });
+  }
 };
