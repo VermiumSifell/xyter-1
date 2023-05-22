@@ -2,6 +2,7 @@
 Controlpanel
 cooldown
 cpgg
+ctrlpanel
 dagen
 discordjs
 Följande

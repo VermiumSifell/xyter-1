@@ -4,7 +4,6 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../helpers/deferReply";
-import getEmbedConfig from "../../../helpers/getEmbedConfig";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -20,21 +19,26 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 export const execute = async (interaction: CommandInteraction) => {
   await deferReply(interaction, false);
 
-  const { successColor, footerText, footerIcon } = await getEmbedConfig(
-    interaction.guild
-  );
-  const userOption = interaction.options.getUser("user");
+  const { options, user } = interaction;
 
-  const targetUser = userOption || interaction.user;
+  const userOption = options.getUser("user");
+
+  const targetUser = userOption || user;
 
   const embed = new EmbedBuilder()
-    .setTitle(":toolbox:︱Avatar")
+    .setAuthor({
+      name: `${targetUser.username}'s Profile Picture`,
+      iconURL: targetUser.displayAvatarURL(),
+    })
     .setTimestamp(new Date())
-    .setFooter({ text: footerText, iconURL: footerIcon });
+    .setFooter({
+      text: `Requested by ${user.username}`,
+      iconURL: user.displayAvatarURL(),
+    });
 
   const avatarUrl = targetUser.displayAvatarURL();
 
-  return interaction.editReply({
+  await interaction.editReply({
     embeds: [
       embed
         .setDescription(
@@ -43,7 +47,7 @@ export const execute = async (interaction: CommandInteraction) => {
             : `Your avatar is available to [download here](${avatarUrl}).`
         )
         .setThumbnail(avatarUrl)
-        .setColor(successColor),
+        .setColor("#895aed"),
     ],
   });
 };

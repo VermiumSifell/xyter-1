@@ -82,37 +82,10 @@ model GuildSettings {
 
   guild Guild @relation(fields: [id], references: [id])
 
-  embedSettings             GuildEmbedSettings?      @relation(fields: [guildEmbedSettingsId], references: [id])
   creditsSettings           GuildCreditsSettings?    @relation(fields: [guildCreditsSettingsId], references: [id])
-  pointsSettings            GuildPointsSettings?     @relation(fields: [guildPointsSettingsId], references: [id])
   reputationSettings        GuildReputationSettings? @relation(fields: [guildReputationSettingsId], references: [id])
-  countersSettings          GuildCountersSettings?   @relation(fields: [guildCountersSettingsId], references: [id])
-  auditsSettings            GuildAuditsSettings?     @relation(fields: [guildAuditsSettingsId], references: [id])
-  shopSettings              GuildShopSettings?       @relation(fields: [guildShopSettingsId], references: [id])
-  welcomeSettings           GuildWelcomeSettings?    @relation(fields: [guildWelcomeSettingsId], references: [id])
-  guildEmbedSettingsId      String?
   guildCreditsSettingsId    String?
-  guildPointsSettingsId     String?
   guildReputationSettingsId String?
-  guildCountersSettingsId   String?
-  guildAuditsSettingsId     String?
-  guildShopSettingsId       String?
-  guildWelcomeSettingsId    String?
-}
-
-model GuildEmbedSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  successColor  String?         @default("#22bb33")
-  waitColor     String?         @default("#f0ad4e")
-  errorColor    String?         @default("#bb2124")
-  footerText    String?         @default("https://github.com/ZynerOrg/xyter")
-  footerIcon    String?         @default("https://github.com/ZynerOrg.png")
-  GuildSettings GuildSettings[]
 }
 
 model GuildCreditsSettings {
@@ -133,20 +106,6 @@ model GuildCreditsSettings {
   GuildSettings     GuildSettings[]
 }
 
-model GuildPointsSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status        Boolean         @default(false)
-  rate          Int             @default(1)
-  timeout       Int             @default(5)
-  minimumLength Int             @default(5)
-  GuildSettings GuildSettings[]
-}
-
 model GuildReputationSettings {
   id        String   @unique
   createdAt DateTime @default(now())
@@ -156,55 +115,6 @@ model GuildReputationSettings {
 
   status        Boolean         @default(false)
   GuildSettings GuildSettings[]
-}
-
-model GuildCountersSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status        Boolean         @default(false)
-  GuildSettings GuildSettings[]
-}
-
-model GuildAuditsSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status        Boolean         @default(false)
-  channelId     String?
-  GuildSettings GuildSettings[]
-}
-
-model GuildShopSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status        Boolean         @default(false)
-  GuildSettings GuildSettings[]
-}
-
-model GuildWelcomeSettings {
-  id        String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  guild Guild @relation(fields: [id], references: [id])
-
-  status              Boolean         @default(false)
-  joinChannelId       String?
-  joinChannelMessage  String?
-  leaveChannelId      String?
-  leaveChannelMessage String?
-  GuildSettings       GuildSettings[]
 }
 
 model ApiCredentials {
