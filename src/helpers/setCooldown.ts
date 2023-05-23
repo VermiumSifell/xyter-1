@@ -11,19 +11,36 @@ const setCooldown = async (
 ) => {
   let cooldown: Cooldown | null = null;
 
-  const whereCondition = guildId
-    ? { guildId_userId_name: { guildId, userId, name: generatedName } }
-    : { userId_name: { userId, name: generatedName } };
-
   const upsertData = {
+    where: {
+      OR: [
+        { userId: { equals: userId }, name: { equals: generatedName } },
+        { guildId: { equals: guildId }, name: { equals: generatedName } },
+        {
+          userId: { equals: userId },
+          guildId: { equals: guildId },
+          name: { equals: generatedName },
+        },
+      ],
+    },
     update: { expiresAt },
     create: { userId, guildId, name: generatedName, expiresAt },
   };
 
-  cooldown = await prisma.cooldown.upsert({
-    where: whereCondition,
-    ...upsertData,
+  const existingCooldown = await prisma.cooldown.findFirst({
+    where: upsertData.where,
   });
+
+  if (existingCooldown) {
+    cooldown = await prisma.cooldown.update({
+      where: { id: existingCooldown.id },
+      data: upsertData.update,
+    });
+  } else {
+    cooldown = await prisma.cooldown.create({
+      data: upsertData.create,
+    });
+  }
 
   return cooldown;
 };

@@ -5,6 +5,7 @@ import {
   ButtonStyle,
   ChatInputCommandInteraction,
   EmbedBuilder,
+  codeBlock,
 } from "discord.js";
 import checkCooldown from "../../../../helpers/checkCooldown";
 import { generateInteraction } from "../../../../helpers/generateCooldownName";
@@ -62,7 +63,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
       .setDescription(
         `An error occurred while processing your request. Please try again later.`
       )
-      .addFields({ name: "Error Details", value: `\`${error.message}\`` })
+      .addFields({
+        name: "Error Details",
+        value: `${codeBlock(error.message)}`,
+      })
       .setColor("#895aed")
       .setTimestamp();
 

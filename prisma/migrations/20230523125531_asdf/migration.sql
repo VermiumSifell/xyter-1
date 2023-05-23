@@ -100,13 +100,10 @@ CREATE TABLE `Cooldown` (
     `guildId` VARCHAR(191) NULL,
     `userId` VARCHAR(191) NULL,
 
-    INDEX `Cooldown_guildId_idx`(`guildId`),
-    INDEX `Cooldown_userId_idx`(`userId`),
-    INDEX `Cooldown_name_idx`(`name`),
     INDEX `Cooldown_expiresAt_idx`(`expiresAt`),
-    UNIQUE INDEX `Cooldown_guildId_userId_name_key`(`guildId`, `userId`, `name`),
-    UNIQUE INDEX `Cooldown_guildId_name_key`(`guildId`, `name`),
     UNIQUE INDEX `Cooldown_userId_name_key`(`userId`, `name`),
+    UNIQUE INDEX `Cooldown_guildId_name_key`(`guildId`, `name`),
+    UNIQUE INDEX `Cooldown_guildId_userId_name_key`(`guildId`, `userId`, `name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

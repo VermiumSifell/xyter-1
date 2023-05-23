@@ -1,3 +1,4 @@
+/* eslint-disable no-loops/no-loops */
 import { Client } from "discord.js";
 import registerCommands from "../../handlers/registerCommands";
 import updatePresence from "../../helpers/updatePresence";
@@ -18,4 +19,6 @@ export const execute = async (client: Client) => {
 
   updatePresence(client);
   await registerCommands(client);
+
+  //  await importOldData(client);
 };

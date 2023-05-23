@@ -133,12 +133,9 @@ model Cooldown {
 
   guildMember GuildMember? @relation(fields: [guildId, userId], references: [guildId, userId])
 
-  @@unique([guildId, userId, name])
-  @@unique([guildId, name])
   @@unique([userId, name])
-  @@index([guildId])
-  @@index([userId])
-  @@index([name])
+  @@unique([guildId, name])
+  @@unique([guildId, userId, name])
   @@index([expiresAt])
 }
 

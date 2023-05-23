@@ -20,10 +20,7 @@ export const execute = async (
 ): Promise<void> => {
   await deferReply(interaction, false);
 
-  const { guild, user, channel } = interaction;
-
-  if (!guild) throw new Error("Server unavailable");
-  if (!user) throw new Error("User unavailable");
+  const { channel } = interaction;
 
   try {
     const res = await axios.get("https://www.reddit.com/r/memes/random/.json");
@@ -69,6 +66,6 @@ export const execute = async (
       )
       .setColor("#ff0000");
 
-    await interaction.editReply({ embeds: [errorEmbed] });
+    await interaction.editReply({ embeds: [errorEmbed], components: [] });
   }
 };

@@ -1,5 +1,6 @@
 import { Guild, User } from "discord.js";
 import prisma from "../../../handlers/prisma";
+import upsertGuildMember from "../../../helpers/upsertGuildMember";
 import logger from "../../../middlewares/logger";
 import validateTransaction from "../validateTransaction";
 
@@ -25,11 +26,13 @@ export default async (guild: Guild, user: User, amount: number) => {
         },
       });
 
-      if (existingRecipient && existingRecipient.balance >= 2147483647) {
+      if (existingRecipient && existingRecipient.balance > 2147483647) {
         throw new Error(
           "Oops! That's more credits than the user can have. The maximum allowed is 2,147,483,647."
         );
       }
+
+      await upsertGuildMember(guild, user);
 
       const recipient = await tx.guildMemberCredit.upsert({
         update: {
@@ -54,7 +57,9 @@ export default async (guild: Guild, user: User, amount: number) => {
                   },
                 },
               },
-              where: { guildId_userId: { guildId: guild.id, userId: user.id } },
+              where: {
+                guildId_userId: { guildId: guild.id, userId: user.id },
+              },
             },
           },
           balance: amount,
