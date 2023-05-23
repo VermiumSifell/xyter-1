@@ -81,7 +81,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setAuthor({
       name: "Configuration of Credits",
     })
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setFooter({
       text: `Successfully configured by ${user.username}`,
       iconURL: user.displayAvatarURL(),

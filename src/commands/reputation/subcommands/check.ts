@@ -46,7 +46,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     })
     .setThumbnail(checkUser.displayAvatarURL())
     .setTimestamp()
-    .setColor("#895aed");
+    .setColor(process.env.EMBED_COLOR_SUCCESS);
 
   await interaction.editReply({
     embeds: [interactionEmbed],

@@ -39,7 +39,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
               url: "https://ipinfo.io",
               iconURL: "https://ipinfo.io/static/favicon-96x96.png?v3",
             })
-            .setColor("#895aed")
+            .setColor(process.env.EMBED_COLOR_SUCCESS)
             .setFooter({
               text: `Requested by ${user.username}`,
               iconURL: user.displayAvatarURL(),

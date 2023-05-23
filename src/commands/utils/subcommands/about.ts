@@ -56,7 +56,7 @@ export const execute = async (interaction: CommandInteraction) => {
     .setDescription(botDescription)
     .setTimestamp()
     .setAuthor({ name: "About Xyter" })
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setFooter({
       text: `Requested by ${user.username}`,
       iconURL: user.displayAvatarURL(),

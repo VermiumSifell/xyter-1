@@ -33,17 +33,18 @@ export default async (interaction: ChatInputCommandInteraction) => {
     );
 
     if (cooldownActive) {
+      const timeLeft = formatDistanceToNow(cooldownActive.expiresAt, {
+        includeSeconds: true,
+      });
+
       const cooldownEmbed = new EmbedBuilder()
         .setAuthor({ name: "⚠️ | Request Failed" })
-        .setDescription(`You currently on cooldown. Please try again later.`)
-        .addFields({
-          name: "Time left",
-          value: `\`${formatDistanceToNow(cooldownActive.expiresAt, {
-            includeSeconds: true,
-          })}\``,
-        })
-        .setColor("#895aed")
-        .setTimestamp();
+        .setDescription(
+          `Sorry, but you're currently on cooldown. Please try again later.\n\nRemaining cooldown time: ${timeLeft}`
+        )
+        .setColor("#FF6699")
+        .setTimestamp()
+        .setFooter({ text: `Cooldown ID: ${cooldownActive.id}` });
       await interaction.reply({ embeds: [cooldownEmbed] });
       return;
     }
@@ -67,7 +68,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
         name: "Error Details",
         value: `${codeBlock(error.message)}`,
       })
-      .setColor("#895aed")
+      .setColor("#FFCC66")
       .setTimestamp();
 
     return interaction.editReply({

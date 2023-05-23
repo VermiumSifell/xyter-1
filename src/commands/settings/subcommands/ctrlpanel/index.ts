@@ -61,7 +61,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       name: "Configuration of Ctrlpanel.gg",
       iconURL: "https://ctrlpanel.gg/img/controlpanel.png",
     })
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setFooter({
       text: `Successfully configured by ${user.username}`,
       iconURL: user.displayAvatarURL(),

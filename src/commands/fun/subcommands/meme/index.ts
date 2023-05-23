@@ -53,7 +53,7 @@ export const execute = async (
         text: `Meme by ${content.author} | 👍 ${content.ups}`,
         iconURL: authorData.icon_img.split("?").shift(),
       })
-      .setColor("#895aed");
+      .setColor(process.env.EMBED_COLOR_SUCCESS);
 
     await interaction.editReply({ embeds: [embed], components: [buttons] });
 

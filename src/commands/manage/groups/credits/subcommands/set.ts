@@ -47,7 +47,7 @@ export const execute = async (
   }
 
   const embedSuccess = new EmbedBuilder()
-    .setColor("#895aed") // Blue color for an administrative look
+    .setColor(process.env.EMBED_COLOR_SUCCESS) // Blue color for an administrative look
     .setAuthor({ name: "Administrative Action" }) // Update the author name
     .setDescription(
       `Successfully set ${creditsAmount} credits to the user. This is an administrative action.`

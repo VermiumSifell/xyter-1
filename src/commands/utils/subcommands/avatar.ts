@@ -47,7 +47,7 @@ export const execute = async (interaction: CommandInteraction) => {
             : `Your avatar is available to [download here](${avatarUrl}).`
         )
         .setThumbnail(avatarUrl)
-        .setColor("#895aed"),
+        .setColor(process.env.EMBED_COLOR_SUCCESS),
     ],
   });
 };

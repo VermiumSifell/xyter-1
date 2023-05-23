@@ -37,7 +37,7 @@ export const execute = async (interaction: CommandInteraction) => {
       new EmbedBuilder()
         .setTimestamp(new Date())
         .setAuthor({ name: "💳 Balance" })
-        .setColor("#895aed")
+        .setColor(process.env.EMBED_COLOR_SUCCESS)
         .setFooter({
           text: `Requested by ${user.username}`,
           iconURL: user.displayAvatarURL(),

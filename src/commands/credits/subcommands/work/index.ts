@@ -1,11 +1,12 @@
 import Chance from "chance";
 import {
-  CommandInteraction,
+  ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
+import { setInteraction } from "../../../../helpers/setCooldown";
 import economy from "../../../../modules/credits";
 import jobs from "./jobs";
 
@@ -17,7 +18,7 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 
 const fallbackEmoji = "💼"; // Fallback work emoji
 
-export const execute = async (interaction: CommandInteraction) => {
+export const execute = async (interaction: ChatInputCommandInteraction) => {
   const { guild, user } = interaction;
 
   await deferReply(interaction, false);
@@ -103,7 +104,7 @@ export const execute = async (interaction: CommandInteraction) => {
   const userBalance = await economy.balance(guild, user);
 
   const embedSuccess = new EmbedBuilder()
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setAuthor({
       name: `${user.username}'s Work Result`,
       iconURL: user.displayAvatarURL(),
@@ -121,4 +122,6 @@ export const execute = async (interaction: CommandInteraction) => {
     });
 
   await interaction.editReply({ embeds: [embedSuccess] }); // Send the result as an embed message
+
+  setInteraction(interaction, 86400);
 };

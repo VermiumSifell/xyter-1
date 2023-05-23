@@ -139,6 +139,12 @@ model Cooldown {
   @@index([expiresAt])
 }
 
+model ImportOldData {
+  id              String  @unique
+  done            Boolean @default(false)
+  beforeMessageId String?
+}
+
 // model GuildConfigEmbeds {
 //   id        String   @unique
 //   createdAt DateTime @default(now())

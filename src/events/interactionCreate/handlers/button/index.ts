@@ -32,7 +32,7 @@ export default async (interaction: ButtonInteraction) => {
         `An error occurred while processing your request. Please try again later.`
       )
       .addFields({ name: "Error Details", value: `\`${error.message}\`` })
-      .setColor("#895aed")
+      .setColor(process.env.EMBED_COLOR_SUCCESS)
       .setTimestamp();
 
     return interaction.editReply({

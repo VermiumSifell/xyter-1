@@ -69,7 +69,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
         `Successfully deleted a total of ${messagesToDeleteArray.length} messages.`
       )
       .setTimestamp(new Date())
-      .setColor("#895aed")
+      .setColor(process.env.EMBED_COLOR_SUCCESS)
       .setFooter({
         text: `Action by ${user.username}`,
         iconURL: user.displayAvatarURL(),
