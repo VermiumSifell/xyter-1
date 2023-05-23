@@ -3,9 +3,10 @@ import { ChatInputCommandInteraction, Message } from "discord.js";
 export const generateInteraction = async (
   interaction: ChatInputCommandInteraction
 ) => {
-  return `${
-    interaction.commandName
-  }-${interaction.options.getSubcommandGroup()}-${interaction.options.getSubcommand()}`;
+  const { commandName, options } = interaction;
+  const subcommandGroup = options.getSubcommandGroup();
+  const subcommand = options.getSubcommand();
+  return `${commandName}-${subcommandGroup}-${subcommand}`;
 };
 
 export const generateMessage = async (
@@ -13,5 +14,6 @@ export const generateMessage = async (
   name: string,
   channelSpecific?: boolean
 ) => {
-  return channelSpecific ? `${message.channelId}-${name}` : `${name}`;
+  const { channelId } = message;
+  return channelSpecific ? `${channelId}-${name}` : `${name}`;
 };

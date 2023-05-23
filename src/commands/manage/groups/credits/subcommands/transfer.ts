@@ -52,19 +52,55 @@ export const execute = async (
     throw new Error("Invalid user(s) or credit amount provided.");
   }
 
-  const embedSuccess = new EmbedBuilder()
-    .setColor("#895aed") // Blue color for an administrative look
-    .setAuthor({ name: "Administrative Action" }) // Update the author name
-    .setDescription(
-      `Successfully transferred ${creditsAmount} credits from ${fromUser.username} to ${toUser.username}. This is an administrative action.`
-    ) // Modify the description to convey authority
+  const transactionResult = await economy.transfer(
+    guild,
+    fromUser,
+    toUser,
+    creditsAmount
+  );
+
+  // Constructing the transfer embed
+  const transferEmbed = new EmbedBuilder()
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
+    .addFields(
+      { name: "📤 Sender", value: fromUser.username, inline: true },
+      { name: "📥 Recipient", value: toUser.username, inline: true },
+      {
+        name: "💰 Transferred Amount",
+        value: `${transactionResult.transferredAmount}`,
+        inline: true,
+      },
+      {
+        name: "🪙 Sender Balance",
+        value: `${transactionResult.fromTransaction.balance}`,
+        inline: true,
+      },
+      {
+        name: "🪙 Recipient Balance",
+        value: `${transactionResult.toTransaction.balance}`,
+        inline: true,
+      }
+    )
+    .setAuthor({ name: "This is an administrative action." })
+    //.setThumbnail(user.displayAvatarURL())
     .setFooter({
       text: `Action by ${user.username}`,
       iconURL: user.displayAvatarURL(),
     })
     .setTimestamp();
 
-  await economy.transfer(guild, fromUser, toUser, creditsAmount);
+  // Adding explanation if not all credits were transferred
+  if (creditsAmount !== transactionResult.transferredAmount) {
+    transferEmbed.setAuthor({
+      name: `⚠️ Some credits could not be transferred.`,
+    });
+    const explanation = `*This is because the transfer amount exceeded the maximum allowed limit.*`;
+    transferEmbed.setDescription(explanation);
+  } else {
+    transferEmbed.setAuthor({
+      name: "✅ All credits have been successfully transferred.",
+    });
+  }
 
-  await interaction.editReply({ embeds: [embedSuccess] });
+  await interaction.editReply({ embeds: [transferEmbed] });
 };

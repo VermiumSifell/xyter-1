@@ -1,17 +1,19 @@
 import { Guild, User } from "discord.js";
 
-export default (guild: Guild, user: User, amount: number) => {
+export default async (guild: Guild, user: User, amount: number) => {
   if (!guild) {
-    throw new Error("Credits is only available for guilds");
+    throw new Error("Credits are only available for guilds.");
   }
 
-  // 2. Verify that the amount is not below 1 credits.
   if (amount <= 0) {
-    throw new Error("You can't make an transaction below 1 credits");
+    throw new Error("You cannot make a transaction below 1 credit.");
   }
 
-  // 3. Verify that the user is not an bot.
+  if (amount > 2147483647) {
+    throw new Error("The maximum allowed credits is 2,147,483,647.");
+  }
+
   if (user.bot) {
-    throw new Error("Bots cant participate in transactions");
+    throw new Error("Bots cannot participate in transactions.");
   }
 };

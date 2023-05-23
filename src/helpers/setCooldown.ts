@@ -3,80 +3,46 @@ import { ChatInputCommandInteraction, Message } from "discord.js";
 import prisma from "../handlers/prisma";
 import { generateInteraction, generateMessage } from "./generateCooldownName";
 
+const setCooldown = async (
+  userId: string,
+  guildId: string | null,
+  generatedName: string,
+  expiresAt: Date
+) => {
+  let cooldown: Cooldown | null = null;
+
+  const whereCondition = guildId
+    ? { guildId_userId_name: { guildId, userId, name: generatedName } }
+    : { userId_name: { userId, name: generatedName } };
+
+  const upsertData = {
+    update: { expiresAt },
+    create: { userId, guildId, name: generatedName, expiresAt },
+  };
+
+  cooldown = await prisma.cooldown.upsert({
+    where: whereCondition,
+    ...upsertData,
+  });
+
+  return cooldown;
+};
+
 export const setInteraction = async (
   interaction: ChatInputCommandInteraction,
   cooldownDuration: number
 ) => {
   const { user, guild } = interaction;
-
   const expiresAt = new Date();
   expiresAt.setSeconds(expiresAt.getSeconds() + cooldownDuration);
-
   const generatedName = await generateInteraction(interaction);
 
-  let cooldown: Cooldown | null = null;
-
-  if (!guild) {
-    cooldown = await prisma.cooldown.upsert({
-      where: {
-        userId_name: {
-          userId: user.id,
-          name: generatedName,
-        },
-      },
-      update: {
-        expiresAt,
-      },
-      create: {
-        userId: user.id,
-        name: generatedName,
-        expiresAt,
-      },
-    });
-    return cooldown;
-  }
-
-  if (!user) {
-    cooldown = await prisma.cooldown.upsert({
-      where: {
-        guildId_name: {
-          guildId: guild.id,
-          name: generatedName,
-        },
-      },
-      update: {
-        expiresAt,
-      },
-      create: {
-        guildId: guild.id,
-        name: generatedName,
-        expiresAt,
-      },
-    });
-    return cooldown;
-  } else {
-    cooldown = await prisma.cooldown.upsert({
-      where: {
-        guildId_userId_name: {
-          guildId: guild.id,
-          userId: user.id,
-          name: generatedName,
-        },
-      },
-      update: {
-        expiresAt,
-      },
-      create: {
-        userId: user.id,
-        guildId: guild.id,
-        name: generatedName,
-        expiresAt,
-      },
-    });
-    return cooldown;
-  }
-
-  return cooldown;
+  return setCooldown(
+    user.id,
+    guild ? guild.id : null,
+    generatedName,
+    expiresAt
+  );
 };
 
 export const setMessage = async (
@@ -86,55 +52,14 @@ export const setMessage = async (
   cooldownDuration: number
 ) => {
   const { author, guild } = message;
-
   const expiresAt = new Date();
   expiresAt.setSeconds(expiresAt.getSeconds() + cooldownDuration);
-
   const generatedName = await generateMessage(message, name, channelSpecific);
 
-  const userId = author.id;
-
-  let cooldown: Cooldown | null = null;
-
-  if (!guild) {
-    cooldown = await prisma.cooldown.upsert({
-      where: {
-        userId_name: {
-          userId,
-          name: generatedName,
-        },
-      },
-      update: {
-        expiresAt,
-      },
-      create: {
-        userId,
-        name: generatedName,
-        expiresAt,
-      },
-    });
-    return cooldown;
-  } else {
-    cooldown = await prisma.cooldown.upsert({
-      where: {
-        guildId_userId_name: {
-          guildId: guild.id,
-          userId,
-          name: generatedName,
-        },
-      },
-      update: {
-        expiresAt,
-      },
-      create: {
-        userId,
-        guildId: guild.id,
-        name: generatedName,
-        expiresAt,
-      },
-    });
-    return cooldown;
-  }
-
-  return cooldown;
+  return setCooldown(
+    author.id,
+    guild ? guild.id : null,
+    generatedName,
+    expiresAt
+  );
 };

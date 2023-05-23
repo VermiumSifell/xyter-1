@@ -23,7 +23,7 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
         .setDescription("The amount you want to gift")
         .setRequired(true)
         .setMinValue(1)
-        .setMaxValue(100000000)
+        .setMaxValue(2147483647)
     )
     .addStringOption((option) =>
       option
@@ -58,7 +58,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const recipientEmbed = new EmbedBuilder()
     .setTimestamp()
     .setTitle("🎉 You've Received a Special Gift! 🎁")
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setDescription(`You've received a gift of ${amount} credits!`)
     .setFooter({
       text: `Sent by ${user.username}`,
@@ -81,7 +81,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   const senderEmbed = new EmbedBuilder()
     .setTimestamp()
     .setTitle("🎁 You've Sent an Amazing Surprise Gift! 🎉")
-    .setColor("#895aed")
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setDescription(`Your gift has been sent.`)
     .setFooter({
       text: `Sent to ${recipient.username}`,
