@@ -6,9 +6,12 @@ import {
 } from "discord.js";
 import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
-import { setInteraction } from "../../../../helpers/setCooldown";
+import { generateInteraction } from "../../../../helpers/generateCooldownName";
+import CooldownManager from "../../../../managers/cooldown";
 import economy from "../../../../modules/credits";
 import jobs from "./jobs";
+
+const cooldownManager = new CooldownManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -123,5 +126,10 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await interaction.editReply({ embeds: [embedSuccess] }); // Send the result as an embed message
 
-  setInteraction(interaction, 86400);
+  await cooldownManager.setGuildMemberCooldown(
+    await generateInteraction(interaction),
+    guild.id,
+    user.id,
+    86400
+  );
 };

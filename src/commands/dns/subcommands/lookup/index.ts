@@ -6,7 +6,10 @@ import {
 } from "discord.js";
 import dns from "node:dns";
 import deferReply from "../../../../helpers/deferReply";
-import { setInteraction } from "../../../../helpers/setCooldown";
+import { generateInteraction } from "../../../../helpers/generateCooldownName";
+import CooldownManager from "../../../../managers/cooldown";
+
+const cooldownManager = new CooldownManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -23,7 +26,7 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, false);
 
-  const { options, user } = interaction;
+  const { options, user, guild } = interaction;
 
   const query = options.getString("query", true);
 
@@ -61,5 +64,19 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       });
     });
   });
-  await setInteraction(interaction, 15);
+
+  if (guild) {
+    await cooldownManager.setGuildMemberCooldown(
+      await generateInteraction(interaction),
+      guild.id,
+      user.id,
+      15
+    );
+  } else {
+    await cooldownManager.setUserCooldown(
+      await generateInteraction(interaction),
+      user.id,
+      15
+    );
+  }
 };

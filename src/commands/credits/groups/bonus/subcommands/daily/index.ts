@@ -4,8 +4,11 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../../../../helpers/deferReply";
-import { setInteraction } from "../../../../../../helpers/setCooldown";
+import { generateInteraction } from "../../../../../../helpers/generateCooldownName";
+import CooldownManager from "../../../../../../managers/cooldown";
 import economy from "../../../../../../modules/credits";
+
+const cooldownManager = new CooldownManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command.setName("daily").setDescription("Get daily bonus.");
@@ -47,5 +50,10 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await interaction.editReply({ embeds: [embed] });
 
-  setInteraction(interaction, 24 * 60 * 60); // Set cooldown for 24 hours
+  await cooldownManager.setGuildMemberCooldown(
+    await generateInteraction(interaction),
+    guild.id,
+    user.id,
+    24 * 60 * 60
+  );
 };
