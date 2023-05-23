@@ -7,9 +7,11 @@ import {
   EmbedBuilder,
   codeBlock,
 } from "discord.js";
-import checkCooldown from "../../../../helpers/checkCooldown";
 import { generateInteraction } from "../../../../helpers/generateCooldownName";
+import CooldownManager from "../../../../managers/cooldown";
 import logger from "../../../../middlewares/logger";
+
+const cooldownManager = new CooldownManager();
 
 export default async (interaction: ChatInputCommandInteraction) => {
   if (!interaction.isCommand()) return;
@@ -21,19 +23,33 @@ export default async (interaction: ChatInputCommandInteraction) => {
   }
 
   try {
-    const cooldownActive = await checkCooldown(
-      interaction,
-      await generateInteraction(interaction)
-    );
+    const cooldownItem = await generateInteraction(interaction);
+    const guildId = guild?.id;
+    const userId = user.id;
 
-    logger.verbose(
-      `Guild: ${guild?.id} User: ${user.id} Name: ${await generateInteraction(
-        interaction
-      )} User is on cooldown`
+    const guildCooldown = guildId
+      ? await cooldownManager.checkGuildCooldown(cooldownItem, guildId)
+      : null;
+    const userCooldown = await cooldownManager.checkUserCooldown(
+      cooldownItem,
+      userId
     );
+    const guildMemberCooldown = guildId
+      ? await cooldownManager.checkGuildMemberCooldown(
+          cooldownItem,
+          guildId,
+          userId
+        )
+      : null;
 
-    if (cooldownActive) {
-      const timeLeft = formatDistanceToNow(cooldownActive.expiresAt, {
+    if (guildCooldown || userCooldown || guildMemberCooldown) {
+      logger.verbose(
+        `Guild: ${guildId} User: ${userId} Name: ${cooldownItem} User is on cooldown`
+      );
+
+      const cooldown = guildCooldown || userCooldown || guildMemberCooldown;
+      if (!cooldown || !cooldown.expiresAt) return;
+      const timeLeft = formatDistanceToNow(cooldown.expiresAt, {
         includeSeconds: true,
       });
 
@@ -52,7 +68,8 @@ export default async (interaction: ChatInputCommandInteraction) => {
         )
         .setColor("#FF6699")
         .setTimestamp()
-        .setFooter({ text: `Cooldown ID: ${cooldownActive.id}` });
+        .setFooter({ text: `Cooldown ID: ${cooldown.id}` });
+
       await interaction.reply({
         embeds: [cooldownEmbed],
         components: [buttons],

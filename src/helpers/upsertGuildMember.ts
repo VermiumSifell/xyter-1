@@ -11,7 +11,7 @@ export default async (guild: Guild, user: User) => {
     },
     update: {},
     create: {
-      User: {
+      user: {
         connectOrCreate: {
           create: {
             id: user.id,
@@ -21,7 +21,7 @@ export default async (guild: Guild, user: User) => {
           },
         },
       },
-      Guild: {
+      guild: {
         connectOrCreate: {
           create: {
             id: guild.id,

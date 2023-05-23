@@ -92,19 +92,25 @@ CREATE TABLE `ApiCredentials` (
 
 -- CreateTable
 CREATE TABLE `Cooldown` (
-    `id` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `cooldownItem` VARCHAR(191) NOT NULL,
     `expiresAt` DATETIME(3) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
     `guildId` VARCHAR(191) NULL,
     `userId` VARCHAR(191) NULL,
 
-    INDEX `Cooldown_expiresAt_idx`(`expiresAt`),
-    UNIQUE INDEX `Cooldown_userId_name_key`(`userId`, `name`),
-    UNIQUE INDEX `Cooldown_guildId_name_key`(`guildId`, `name`),
-    UNIQUE INDEX `Cooldown_guildId_userId_name_key`(`guildId`, `userId`, `name`),
+    INDEX `cooldownItem_guildId_idx`(`cooldownItem`, `guildId`),
+    INDEX `cooldownItem_userId_idx`(`cooldownItem`, `userId`),
+    INDEX `cooldownItem_guildId_userId_idx`(`cooldownItem`, `guildId`, `userId`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ImportOldData` (
+    `id` VARCHAR(191) NOT NULL,
+    `done` BOOLEAN NOT NULL DEFAULT false,
+    `beforeMessageId` VARCHAR(191) NULL,
+
+    UNIQUE INDEX `ImportOldData_id_key`(`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey

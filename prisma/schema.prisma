@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,21 +11,21 @@ model Guild {
   id                   String                @unique
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
-  GuildMember          GuildMember[]
-  GuildSettings        GuildSettings?
-  GuildCreditsSettings GuildCreditsSettings?
-  ApiCredentials       ApiCredentials[]
-  Cooldown             Cooldown[]
+  guildMembers         GuildMember[]
+  guildSettings        GuildSettings?
+  guildCreditsSettings GuildCreditsSettings?
+  apiCredentials       ApiCredentials[]
+  cooldowns            Cooldown[]
 }
 
 model User {
   id             String           @unique
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  GuildMember    GuildMember[]
-  ApiCredentials ApiCredentials[]
-  UserReputation UserReputation[]
-  Cooldown       Cooldown[]
+  guildMembers   GuildMember[]
+  apiCredentials ApiCredentials[]
+  userReputation UserReputation[]
+  cooldowns      Cooldown[]
 }
 
 model GuildMember {
@@ -36,11 +33,11 @@ model GuildMember {
   userId            String
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @default(now())
-  Guild             Guild              @relation(fields: [guildId], references: [id])
-  User              User               @relation(fields: [userId], references: [id])
-  GuildMemberCredit GuildMemberCredit?
-  ApiCredentials    ApiCredentials[]
-  Cooldown          Cooldown[]
+  guild             Guild              @relation(fields: [guildId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+  guildMemberCredit GuildMemberCredit?
+  apiCredentials    ApiCredentials[]
+  cooldowns         Cooldown[]
 
   @@unique([guildId, userId])
 }
@@ -51,7 +48,7 @@ model GuildMemberCredit {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  GuildMember GuildMember @relation(fields: [guildId, userId], references: [guildId, userId])
+  guildMember GuildMember @relation(fields: [guildId, userId], references: [guildId, userId])
   balance     Int         @default(0)
 
   @@unique([guildId, userId])
@@ -62,7 +59,7 @@ model UserReputation {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  User User @relation(fields: [id], references: [id])
+  user User @relation(fields: [id], references: [id])
 
   negative Int @default(0)
   positive Int @default(0)
@@ -73,8 +70,7 @@ model GuildSettings {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  guild Guild @relation(fields: [id], references: [id])
-
+  guild                  Guild                 @relation(fields: [id], references: [id])
   creditsSettings        GuildCreditsSettings? @relation(fields: [guildCreditsSettingsId], references: [id])
   guildCreditsSettingsId String?
 }
@@ -84,8 +80,7 @@ model GuildCreditsSettings {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  guild Guild @relation(fields: [id], references: [id])
-
+  guild             Guild           @relation(fields: [id], references: [id])
   workBonusChance   Int             @default(30)
   workPenaltyChance Int             @default(10)
   status            Boolean         @default(false)
@@ -94,7 +89,7 @@ model GuildCreditsSettings {
   workRate          Int             @default(25)
   workTimeout       Int             @default(86400)
   minimumLength     Int             @default(5)
-  GuildSettings     GuildSettings[]
+  guildSettings     GuildSettings[]
 }
 
 model ApiCredentials {
@@ -118,25 +113,18 @@ model ApiCredentials {
 }
 
 model Cooldown {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int          @id @default(autoincrement())
+  cooldownItem String
+  expiresAt    DateTime
+  guild        Guild?       @relation(fields: [guildId], references: [id])
+  guildId      String?
+  user         User?        @relation(fields: [userId], references: [id])
+  userId       String?
+  guildMember  GuildMember? @relation(fields: [guildId, userId], references: [guildId, userId])
 
-  expiresAt DateTime
-  name      String
-
-  guild   Guild?  @relation(fields: [guildId], references: [id])
-  guildId String?
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  guildMember GuildMember? @relation(fields: [guildId, userId], references: [guildId, userId])
-
-  @@unique([userId, name])
-  @@unique([guildId, name])
-  @@unique([guildId, userId, name])
-  @@index([expiresAt])
+  @@index([cooldownItem, guildId], name: "cooldownItem_guildId_idx")
+  @@index([cooldownItem, userId], name: "cooldownItem_userId_idx")
+  @@index([cooldownItem, guildId, userId], name: "cooldownItem_guildId_userId_idx")
 }
 
 model ImportOldData {
@@ -144,153 +132,3 @@ model ImportOldData {
   done            Boolean @default(false)
   beforeMessageId String?
 }
-
-// model GuildConfigEmbeds {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   successColor String @default("#22bb33")
-//   waitColor    String @default("#f0ad4e")
-//   errorColor   String @default("#bb2124")
-//   footerText   String @default("https://github.com/ZynerOrg/xyter")
-//   footerIcon   String @default("https://github.com/ZynerOrg.png")
-// }
-
-// model GuildConfigCredits {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status        Boolean @default(false)
-//   rate          Int     @default(1)
-//   timeout       Int     @default(5)
-//   workRate      Int     @default(25)
-//   workTimeout   Int     @default(86400)
-//   minimumLength Int     @default(5)
-// }
-
-// model GuildConfigPoints {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status        Boolean @default(false)
-//   rate          Int     @default(1)
-//   timeout       Int     @default(5)
-//   minimumLength Int     @default(5)
-// }
-
-// model GuildConfigReputation {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status Boolean @default(false)
-// }
-
-// model GuildConfigCounters {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status Boolean @default(false)
-// }
-
-// model GuildConfigApisCpgg {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   urlIv        String?
-//   urlContent   String?
-//   tokenIv      String?
-//   tokenContent String?
-// }
-
-// model GuildConfigAudits {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status    Boolean @default(false)
-//   channelId String
-// }
-
-// model GuildConfigShop {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status Boolean @default(false)
-// }
-
-// model GuildConfigWelcome {
-//   id        String   @unique
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [id], references: [id])
-
-//   status              Boolean @default(false)
-//   joinChannelId       String?
-//   joinChannelMessage  String?
-//   leaveChannelId      String?
-//   leaveChannelMessage String?
-// }
-
-// model GuildCounters {
-//   guildId   String
-//   channelId String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [guildId], references: [id])
-
-//   triggerWord String
-//   count       Int    @default(0)
-
-//   @@unique([guildId, channelId])
-// }
-
-// model GuildMemberCredit {
-//   userId  String
-//   guildId String
-
-//   guildMember GuildMember @relation(fields: [userId, guildId], references: [userId, guildId])
-
-//   balance Int @default(0)
-
-//   @@unique([userId, guildId])
-// }
-
-// model Cooldown {
-//   guildId   String
-//   userId    String
-//   timeoutId String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   guild Guild @relation(fields: [guildId], references: [id])
-//   user  User  @relation(fields: [userId], references: [id])
-
-//   cooldown Int
-
-//   @@unique([guildId, userId, timeoutId])
-// }
