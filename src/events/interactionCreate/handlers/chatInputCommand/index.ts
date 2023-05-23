@@ -37,6 +37,14 @@ export default async (interaction: ChatInputCommandInteraction) => {
         includeSeconds: true,
       });
 
+      const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setLabel("Report Problem")
+          .setStyle(ButtonStyle.Link)
+          .setEmoji("✏️")
+          .setURL("https://discord.zyner.org")
+      );
+
       const cooldownEmbed = new EmbedBuilder()
         .setAuthor({ name: "⚠️ | Request Failed" })
         .setDescription(
@@ -45,7 +53,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
         .setColor("#FF6699")
         .setTimestamp()
         .setFooter({ text: `Cooldown ID: ${cooldownActive.id}` });
-      await interaction.reply({ embeds: [cooldownEmbed] });
+      await interaction.reply({
+        embeds: [cooldownEmbed],
+        components: [buttons],
+      });
       return;
     }
 
