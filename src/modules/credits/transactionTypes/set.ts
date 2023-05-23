@@ -24,16 +24,16 @@ export default async (guild: Guild, user: User, amount: number) => {
           balance: amount,
         },
         create: {
-          GuildMember: {
+          guildMember: {
             connectOrCreate: {
               create: {
-                User: {
+                user: {
                   connectOrCreate: {
                     create: { id: user.id },
                     where: { id: user.id },
                   },
                 },
-                Guild: {
+                guild: {
                   connectOrCreate: {
                     create: { id: guild.id },
                     where: { id: guild.id },
