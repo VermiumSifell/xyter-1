@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import dns from "node:dns";
 import deferReply from "../../../../helpers/deferReply";
+import { setInteraction } from "../../../../helpers/setCooldown";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -60,4 +61,5 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       });
     });
   });
+  await setInteraction(interaction, 15);
 };

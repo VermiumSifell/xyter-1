@@ -3,23 +3,25 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   TextChannel,
 } from "discord.js";
 import deferReply from "../../../../helpers/deferReply";
+import { setInteraction } from "../../../../helpers/setCooldown";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command.setName("meme").setDescription("Random memes from r/memes");
 };
 
 export const execute = async (
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 ): Promise<void> => {
   await deferReply(interaction, false);
 
   const { guild, user, channel } = interaction;
+
   if (!guild) throw new Error("Server unavailable");
   if (!user) throw new Error("User unavailable");
 
@@ -57,6 +59,8 @@ export const execute = async (
       .setColor("#895aed");
 
     await interaction.editReply({ embeds: [embed], components: [buttons] });
+
+    await setInteraction(interaction, 10);
   } catch (error) {
     const errorEmbed = new EmbedBuilder()
       .setTitle("Error")

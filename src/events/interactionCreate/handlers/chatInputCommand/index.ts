@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from "date-fns";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -5,10 +6,13 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
 } from "discord.js";
+import checkCooldown from "../../../../helpers/checkCooldown";
+import { generateInteraction } from "../../../../helpers/generateCooldownName";
+import logger from "../../../../middlewares/logger";
 
 export default async (interaction: ChatInputCommandInteraction) => {
   if (!interaction.isCommand()) return;
-  const { client, commandName } = interaction;
+  const { client, commandName, user, guild } = interaction;
 
   const currentCommand = client.commands.get(commandName);
   if (!currentCommand) {
@@ -16,6 +20,33 @@ export default async (interaction: ChatInputCommandInteraction) => {
   }
 
   try {
+    const cooldownActive = await checkCooldown(
+      interaction,
+      await generateInteraction(interaction)
+    );
+
+    logger.verbose(
+      `Guild: ${guild?.id} User: ${user.id} Name: ${await generateInteraction(
+        interaction
+      )} User is on cooldown`
+    );
+
+    if (cooldownActive) {
+      const cooldownEmbed = new EmbedBuilder()
+        .setAuthor({ name: "⚠️ | Request Failed" })
+        .setDescription(`You currently on cooldown. Please try again later.`)
+        .addFields({
+          name: "Time left",
+          value: `\`${formatDistanceToNow(cooldownActive.expiresAt, {
+            includeSeconds: true,
+          })}\``,
+        })
+        .setColor("#895aed")
+        .setTimestamp();
+      await interaction.reply({ embeds: [cooldownEmbed] });
+      return;
+    }
+
     await currentCommand.execute(interaction);
   } catch (error: any) {
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
