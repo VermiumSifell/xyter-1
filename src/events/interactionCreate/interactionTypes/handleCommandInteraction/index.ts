@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
 import CooldownManager from "../../../../managers/cooldown";
 import handleCooldown from "./handlers/handleCooldown";
@@ -8,7 +8,7 @@ import handleUnavailableCommand from "./handlers/handleUnavailableCommand";
 const cooldownManager = new CooldownManager();
 
 export default async function handleCommandInteraction(
-  interaction: ChatInputCommandInteraction
+  interaction: CommandInteraction
 ) {
   if (!interaction.isCommand()) {
     return;

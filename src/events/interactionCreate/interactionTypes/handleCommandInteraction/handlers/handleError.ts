@@ -2,7 +2,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChatInputCommandInteraction,
+  CommandInteraction,
   EmbedBuilder,
   codeBlock,
 } from "discord.js";
@@ -10,11 +10,17 @@ import logger from "../../../../../middlewares/logger";
 import sendResponse from "../../../../../utils/sendResponse";
 
 export default async function handleError(
-  interaction: ChatInputCommandInteraction,
+  interaction: CommandInteraction,
   commandName: string,
   error: unknown
 ) {
   if (error instanceof Error) {
+    await handleCommandError(error);
+  } else {
+    handleUnknownError();
+  }
+
+  async function handleCommandError(error: Error) {
     logger.error(`Error occurred in command '${commandName}':`, error);
 
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -22,7 +28,12 @@ export default async function handleError(
         .setLabel("Report Problem")
         .setStyle(ButtonStyle.Link)
         .setEmoji("✏️")
-        .setURL("https://discord.zyner.org")
+        .setURL("https://discord.zyner.org"),
+      new ButtonBuilder()
+        .setLabel("Test")
+        .setStyle(ButtonStyle.Primary)
+        .setCustomId("primary")
+        .setEmoji("✏️")
     );
 
     const errorDetailsValue =
@@ -48,10 +59,12 @@ export default async function handleError(
     };
 
     await sendResponse(interaction, response);
-  } else {
+  }
+
+  function handleUnknownError() {
+    logger.error(`Unknown error occurred in command '${commandName}'`);
     // Handle the case when the error is not an instance of Error
     // For example, you can log a generic error message or take appropriate action
-    logger.error(`Unknown error occurred in command '${commandName}'`);
     // Rest of the error handling logic...
   }
 }

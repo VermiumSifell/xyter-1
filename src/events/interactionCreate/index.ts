@@ -1,4 +1,4 @@
-import { BaseInteraction, InteractionType } from "discord.js";
+import { BaseInteraction } from "discord.js";
 import upsertGuildMember from "../../helpers/upsertGuildMember";
 import { IEventOptions } from "../../interfaces/EventOptions";
 import logger from "../../middlewares/logger";
@@ -18,20 +18,12 @@ export async function execute(interaction: BaseInteraction) {
     await upsertGuildMember(guild, user);
   }
 
-  switch (interaction.type) {
-    case InteractionType.ApplicationCommand: {
-      if (interaction.isChatInputCommand()) {
-        await handleCommandInteraction(interaction);
-      } else if (interaction.isButton()) {
-        await button(interaction);
-      } else {
-        logError("Unknown interaction type");
-      }
-      break;
-    }
-    default: {
-      logError("Unknown interaction type");
-    }
+  if (interaction.isCommand()) {
+    await handleCommandInteraction(interaction);
+  } else if (interaction.isButton()) {
+    await button(interaction);
+  } else {
+    logError("Unknown interaction type");
   }
 
   function logInteraction() {

@@ -2,17 +2,18 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChatInputCommandInteraction,
+  CommandInteraction,
   EmbedBuilder,
 } from "discord.js";
 import logger from "../../../../../middlewares/logger";
 import sendResponse from "../../../../../utils/sendResponse";
 
 export default async function handleUnavailableCommand(
-  interaction: ChatInputCommandInteraction,
+  interaction: CommandInteraction,
   commandName: string
 ) {
-  logger.error(`Command '${commandName}' is unavailable`);
+  const commandErrorMessage = `Command '${commandName}' is unavailable`;
+  logger.error(commandErrorMessage);
 
   const errorEmbed = new EmbedBuilder()
     .setAuthor({ name: "⚠️ | Request Failed" })

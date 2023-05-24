@@ -4,13 +4,13 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChatInputCommandInteraction,
+  CommandInteraction,
   EmbedBuilder,
 } from "discord.js";
 import sendResponse from "../../../../../utils/sendResponse";
 
 export default async function handleCooldown(
-  interaction: ChatInputCommandInteraction,
+  interaction: CommandInteraction,
   guildCooldown: Cooldown | null,
   userCooldown: Cooldown | null,
   guildMemberCooldown: Cooldown | null
@@ -25,22 +25,9 @@ export default async function handleCooldown(
     includeSeconds: true,
   });
 
-  const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setLabel("Report Problem")
-      .setStyle(ButtonStyle.Link)
-      .setEmoji("✏️")
-      .setURL("https://discord.zyner.org")
-  );
+  const buttons = createButtons();
 
-  const cooldownEmbed = new EmbedBuilder()
-    .setAuthor({ name: "⚠️ | Request Failed" })
-    .setDescription(
-      `Sorry, but you're currently on cooldown. Please try again later.\n\nRemaining cooldown time: ${timeLeft}`
-    )
-    .setColor("#FF6699")
-    .setTimestamp()
-    .setFooter({ text: `Cooldown ID: ${cooldown.id}` });
+  const cooldownEmbed = createCooldownEmbed(timeLeft, cooldown.id);
 
   const response = {
     embeds: [cooldownEmbed],
@@ -48,4 +35,25 @@ export default async function handleCooldown(
   };
 
   await sendResponse(interaction, response);
+}
+
+function createButtons() {
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setLabel("Report Problem")
+      .setStyle(ButtonStyle.Link)
+      .setEmoji("✏️")
+      .setURL("https://discord.zyner.org")
+  );
+}
+
+function createCooldownEmbed(timeLeft: string, cooldownId: number) {
+  return new EmbedBuilder()
+    .setAuthor({ name: "⚠️ | Request Failed" })
+    .setDescription(
+      `Sorry, but you're currently on cooldown. Please try again later.\n\nRemaining cooldown time: ${timeLeft}`
+    )
+    .setColor("#FF6699")
+    .setTimestamp()
+    .setFooter({ text: `Cooldown ID: ${cooldownId}` });
 }
