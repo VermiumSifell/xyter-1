@@ -1,26 +1,33 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
+  Guild,
   SlashCommandSubcommandBuilder,
+  User,
+  codeBlock,
 } from "discord.js";
 import deferReply from "../../../../helpers/deferReply";
 import upsertGuildMember from "../../../../helpers/upsertGuildMember";
 import credits from "../../../../modules/credits";
 
+const GIFT_EMOJI = "🎁";
+const BALLOON_EMOJI = "🎉";
+const MESSAGE_EMOJI = "💬";
+
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
     .setName("gift")
-    .setDescription("Gift credits to an account")
+    .setDescription("🎁 Gift credits to an account")
     .addUserOption((option) =>
       option
         .setName("account")
-        .setDescription("The account you want to gift to")
+        .setDescription("👤 The account you want to gift to")
         .setRequired(true)
     )
     .addIntegerOption((option) =>
       option
         .setName("amount")
-        .setDescription("The amount you want to gift")
+        .setDescription("💰 The amount you want to gift")
         .setRequired(true)
         .setMinValue(1)
         .setMaxValue(2147483647)
@@ -28,7 +35,7 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     .addStringOption((option) =>
       option
         .setName("message")
-        .setDescription("Your personalized message to the account")
+        .setDescription("💬 Your personalized message to the account")
     );
 };
 
@@ -52,52 +59,82 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await credits.transfer(guild, user, recipient, amount);
 
-  const recipientAccount = await credits.balance(guild, recipient);
-  const senderAccount = await credits.balance(guild, user);
+  const recipientEmbed = await createRecipientEmbed(
+    user,
+    guild,
+    recipient,
+    amount,
+    message
+  );
+  const senderEmbed = await createSenderEmbed(
+    guild,
+    user,
+    recipient,
+    amount,
+    message
+  );
 
+  await recipient.send({ embeds: [recipientEmbed] });
+
+  await interaction.editReply({ embeds: [senderEmbed] });
+};
+
+const createRecipientEmbed = async (
+  sender: User,
+  guild: Guild,
+  recipient: User,
+  amount: number,
+  message: string | null
+) => {
   const recipientEmbed = new EmbedBuilder()
     .setTimestamp()
-    .setTitle("🎉 You've Received a Special Gift! 🎁")
+    .setAuthor({
+      name: `🎁 ${sender.username} sent you a gift!`,
+    })
     .setColor(process.env.EMBED_COLOR_SUCCESS)
-    .setDescription(`You've received a gift of ${amount} credits!`)
+    .setDescription(`You've received ${amount} credits as a gift!`)
+    .setThumbnail(sender.displayAvatarURL())
     .setFooter({
-      text: `Sent by ${user.username} in guild ${guild.name}`,
-      iconURL: user.displayAvatarURL(),
+      text: `You received this gift in guild ${guild.name}`,
+      iconURL: guild.iconURL() || "",
     });
 
   if (message) {
-    recipientEmbed.addFields({ name: "Message", value: message });
+    recipientEmbed.addFields({
+      name: "Message",
+      value: codeBlock(message),
+    });
   }
 
-  await recipient.send({
-    embeds: [
-      recipientEmbed.addFields({
-        name: "New Balance",
-        value: `Your balance now contains ${recipientAccount.balance} credits!`,
-      }),
-    ],
-  });
+  return recipientEmbed;
+};
 
+const createSenderEmbed = async (
+  guild: Guild,
+  sender: User,
+  recipient: User,
+  amount: number,
+  message: string | null
+) => {
   const senderEmbed = new EmbedBuilder()
     .setTimestamp()
-    .setTitle("🎁 You've Sent an Amazing Surprise Gift! 🎉")
+    .setAuthor({
+      name: `🎁 You sent a gift to ${recipient.username}!`,
+    })
     .setColor(process.env.EMBED_COLOR_SUCCESS)
-    .setDescription(`Your gift has been sent.`)
+    .setDescription(`You've sent ${amount} credits as a gift!`)
+    .setThumbnail(recipient.displayAvatarURL())
     .setFooter({
-      text: `Sent to ${recipient.username}`,
-      iconURL: recipient.displayAvatarURL(),
+      text: `The recipient received this gift in guild ${guild.name}`,
+      iconURL: guild.iconURL() || "",
     });
 
   if (message) {
-    senderEmbed.addFields({ name: "Message", value: message });
+    senderEmbed.addFields({
+      name: "Message",
+      value: codeBlock(message),
+    });
   }
 
-  await interaction.editReply({
-    embeds: [
-      senderEmbed.addFields({
-        name: "New Balance",
-        value: `Your balance now contains ${senderAccount.balance} credits!`,
-      }),
-    ],
-  });
+  return senderEmbed;
 };
