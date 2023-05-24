@@ -32,9 +32,20 @@ export default async (client: Client) => {
   const importJob = async (jobName: string) => {
     try {
       const job = (await import(`../jobs/${jobName}`)) as IJob;
-      schedule.scheduleJob(job.options.schedule, () => {
-        executeJob(job, jobName);
-      });
+
+      // Check if the bot is already logged in
+      if (client.readyAt) {
+        schedule.scheduleJob(job.options.schedule, () => {
+          executeJob(job, jobName);
+        });
+      } else {
+        // Wait for the bot to be ready before scheduling the job
+        client.once("ready", () => {
+          schedule.scheduleJob(job.options.schedule, () => {
+            executeJob(job, jobName);
+          });
+        });
+      }
     } catch (error) {
       logger.warn({
         jobName,
