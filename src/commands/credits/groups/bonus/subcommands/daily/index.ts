@@ -4,7 +4,7 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../../../../helpers/deferReply";
-import { generateInteraction } from "../../../../../../helpers/generateCooldownName";
+import generateCooldownName from "../../../../../../helpers/generateCooldownName";
 import CooldownManager from "../../../../../../managers/cooldown";
 import economy from "../../../../../../modules/credits";
 
@@ -51,9 +51,9 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   await interaction.editReply({ embeds: [embed] });
 
   await cooldownManager.setGuildMemberCooldown(
-    await generateInteraction(interaction),
-    guild.id,
-    user.id,
+    await generateCooldownName(interaction),
+    guild,
+    user,
     24 * 60 * 60
   );
 };
