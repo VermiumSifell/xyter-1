@@ -7,8 +7,12 @@ import handleUnavailableCommand from "./handlers/handleUnavailableCommand";
 
 const cooldownManager = new CooldownManager();
 
-export default async (interaction: ChatInputCommandInteraction) => {
-  if (!interaction.isCommand()) return;
+export default async function handleCommandInteraction(
+  interaction: ChatInputCommandInteraction
+) {
+  if (!interaction.isCommand()) {
+    return;
+  }
 
   const { client, commandName, user, guild } = interaction;
   const currentCommand = client.commands.get(commandName);
@@ -33,7 +37,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     } else {
       await currentCommand.execute(interaction);
     }
-  } catch (error: any) {
+  } catch (error) {
     await handleError(interaction, commandName, error);
   }
-};
+}

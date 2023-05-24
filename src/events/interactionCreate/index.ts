@@ -3,21 +3,16 @@ import upsertGuildMember from "../../helpers/upsertGuildMember";
 import { IEventOptions } from "../../interfaces/EventOptions";
 import logger from "../../middlewares/logger";
 import button from "./interactionTypes/button";
-import chatInputCommand from "./interactionTypes/chatInputCommand";
+import handleCommandInteraction from "./interactionTypes/handleCommandInteraction";
 
 export const options: IEventOptions = {
   type: "on",
 };
 
-export const execute = async (interaction: BaseInteraction) => {
+export async function execute(interaction: BaseInteraction) {
   const { guild, user } = interaction;
 
-  logger.verbose({
-    message: `New interaction created: ${interaction.id} by: ${user.tag} (${user.id})`,
-    interactionId: interaction.id,
-    userId: user.id,
-    guildId: guild?.id,
-  });
+  logInteraction();
 
   if (guild) {
     await upsertGuildMember(guild, user);
@@ -26,32 +21,36 @@ export const execute = async (interaction: BaseInteraction) => {
   switch (interaction.type) {
     case InteractionType.ApplicationCommand: {
       if (interaction.isChatInputCommand()) {
-        await chatInputCommand(interaction);
+        await handleCommandInteraction(interaction);
       } else if (interaction.isButton()) {
         await button(interaction);
       } else {
-        const errorMessage = "Unknown interaction type";
-        logger.error({
-          message: errorMessage,
-          error: new Error(errorMessage),
-          interactionId: interaction.id,
-          userId: user.id,
-          guildId: guild?.id,
-        });
-        throw new Error(errorMessage);
+        logError("Unknown interaction type");
       }
       break;
     }
     default: {
-      const errorMessage = "Unknown interaction type";
-      logger.error({
-        message: errorMessage,
-        error: new Error(errorMessage),
-        interactionId: interaction.id,
-        userId: user.id,
-        guildId: guild?.id,
-      });
-      throw new Error(errorMessage);
+      logError("Unknown interaction type");
     }
   }
-};
+
+  function logInteraction() {
+    logger.verbose({
+      message: `New interaction created: ${interaction.id} by: ${user.tag} (${user.id})`,
+      interactionId: interaction.id,
+      userId: user.id,
+      guildId: guild?.id,
+    });
+  }
+
+  function logError(errorMessage: string) {
+    logger.error({
+      message: errorMessage,
+      error: new Error(errorMessage),
+      interactionId: interaction.id,
+      userId: user.id,
+      guildId: guild?.id,
+    });
+    throw new Error(errorMessage);
+  }
+}
