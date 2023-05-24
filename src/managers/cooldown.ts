@@ -1,4 +1,5 @@
 import { Cooldown, PrismaClient } from "@prisma/client";
+import { Guild, User } from "discord.js";
 import logger from "../middlewares/logger";
 
 const prisma = new PrismaClient();
@@ -6,7 +7,7 @@ const prisma = new PrismaClient();
 class CooldownManager {
   async setGuildCooldown(
     cooldownItem: string,
-    guildId: string,
+    guild: Guild,
     cooldownSeconds: number
   ): Promise<void> {
     const expiresAt = new Date(Date.now() + cooldownSeconds * 1000);
@@ -15,16 +16,16 @@ class CooldownManager {
       data: {
         cooldownItem,
         expiresAt,
-        guild: { connect: { id: guildId } },
+        guild: { connect: { id: guild.id } },
       },
     });
 
-    logger.verbose(`Set guild cooldown: ${cooldownItem} in guild ${guildId}`);
+    logger.verbose(`Set guild cooldown: ${cooldownItem} in guild ${guild.id}`);
   }
 
   async setUserCooldown(
     cooldownItem: string,
-    userId: string,
+    user: User,
     cooldownSeconds: number
   ): Promise<void> {
     const expiresAt = new Date(Date.now() + cooldownSeconds * 1000);
@@ -33,17 +34,17 @@ class CooldownManager {
       data: {
         cooldownItem,
         expiresAt,
-        user: { connect: { id: userId } },
+        user: { connect: { id: user.id } },
       },
     });
 
-    logger.verbose(`Set user cooldown: ${cooldownItem} for user ${userId}`);
+    logger.verbose(`Set user cooldown: ${cooldownItem} for user ${user.id}`);
   }
 
   async setGuildMemberCooldown(
     cooldownItem: string,
-    guildId: string,
-    userId: string,
+    guild: Guild,
+    user: User,
     cooldownSeconds: number
   ): Promise<void> {
     const expiresAt = new Date(Date.now() + cooldownSeconds * 1000);
@@ -52,25 +53,25 @@ class CooldownManager {
       data: {
         cooldownItem,
         expiresAt,
-        guild: { connect: { id: guildId } },
-        user: { connect: { id: userId } },
+        guild: { connect: { id: guild.id } },
+        user: { connect: { id: user.id } },
       },
     });
 
     logger.verbose(
-      `Set guild member cooldown: ${cooldownItem} in guild ${guildId} for user ${userId}`
+      `Set guild member cooldown: ${cooldownItem} in guild ${guild.id} for user ${user.id}`
     );
   }
 
   async checkGuildCooldown(
     cooldownItem: string,
-    guildId: string
+    guild: Guild
   ): Promise<Cooldown | null> {
     const start = Date.now();
     const cooldown = await prisma.cooldown.findFirst({
       where: {
         cooldownItem,
-        guild: { id: guildId },
+        guild: { id: guild.id },
         user: null,
         expiresAt: {
           gte: new Date(),
@@ -80,7 +81,7 @@ class CooldownManager {
     const duration = Date.now() - start;
 
     logger.verbose(
-      `Checked guild cooldown: ${cooldownItem} in guild ${guildId}. Duration: ${duration}ms`
+      `Checked guild cooldown: ${cooldownItem} in guild ${guild.id}. Duration: ${duration}ms`
     );
 
     return cooldown;
@@ -88,13 +89,13 @@ class CooldownManager {
 
   async checkUserCooldown(
     cooldownItem: string,
-    userId: string
+    user: User
   ): Promise<Cooldown | null> {
     const start = Date.now();
     const cooldown = await prisma.cooldown.findFirst({
       where: {
         cooldownItem,
-        user: { id: userId },
+        user: { id: user.id },
         guild: null,
         expiresAt: {
           gte: new Date(),
@@ -104,7 +105,7 @@ class CooldownManager {
     const duration = Date.now() - start;
 
     logger.verbose(
-      `Checked user cooldown: ${cooldownItem} for user ${userId}. Duration: ${duration}ms`
+      `Checked user cooldown: ${cooldownItem} for user ${user.id}. Duration: ${duration}ms`
     );
 
     return cooldown;
@@ -112,15 +113,15 @@ class CooldownManager {
 
   async checkGuildMemberCooldown(
     cooldownItem: string,
-    guildId: string,
-    userId: string
+    guild: Guild,
+    user: User
   ): Promise<Cooldown | null> {
     const start = Date.now();
     const cooldown = await prisma.cooldown.findFirst({
       where: {
         cooldownItem,
-        guild: { id: guildId },
-        user: { id: userId },
+        guild: { id: guild.id },
+        user: { id: user.id },
         expiresAt: {
           gte: new Date(),
         },
@@ -129,10 +130,22 @@ class CooldownManager {
     const duration = Date.now() - start;
 
     logger.verbose(
-      `Checked guild member cooldown: ${cooldownItem} in guild ${guildId} for user ${userId}. Duration: ${duration}ms`
+      `Checked guild member cooldown: ${cooldownItem} in guild ${guild.id} for user ${user.id}. Duration: ${duration}ms`
     );
 
     return cooldown;
+  }
+
+  async checkCooldowns(cooldownItem: string, guild: Guild | null, user: User) {
+    const guildCooldown = guild
+      ? await this.checkGuildCooldown(cooldownItem, guild)
+      : null;
+    const userCooldown = await this.checkUserCooldown(cooldownItem, user);
+    const guildMemberCooldown = guild
+      ? await this.checkGuildMemberCooldown(cooldownItem, guild, user)
+      : null;
+
+    return { guildCooldown, userCooldown, guildMemberCooldown };
   }
 }
 

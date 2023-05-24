@@ -24,8 +24,9 @@ model User {
   updatedAt      DateTime         @updatedAt
   guildMembers   GuildMember[]
   apiCredentials ApiCredentials[]
-  userReputation UserReputation[]
   cooldowns      Cooldown[]
+
+  userReputation UserReputation?
 }
 
 model GuildMember {

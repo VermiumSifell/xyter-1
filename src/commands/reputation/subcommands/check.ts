@@ -4,7 +4,9 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../helpers/deferReply";
-import * as reputation from "../../../modules/reputation";
+import ReputationManager from "../../../managers/reputation";
+
+const reputationManager = new ReputationManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -27,7 +29,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!user) throw new Error("User unavailable");
 
-  const userReputation = await reputation.check(checkUser);
+  const userReputation = await reputationManager.check(checkUser);
 
   const interactionEmbed = new EmbedBuilder()
     .setAuthor({

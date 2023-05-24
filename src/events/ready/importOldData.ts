@@ -11,12 +11,12 @@ export default async (client: Client) => {
     const guilds = client.guilds.cache.values();
 
     for await (const guild of guilds) {
-      if (guild.name === "Zyner Infrastructure") continue;
+      // if (guild.name === "Zyner Infrastructure") continue;
 
-      if (guild.memberCount > 200) {
-        logger.info(`Skipped guild: ${guild.name}`);
-        continue;
-      }
+      // if (guild.memberCount > 200) {
+      //   logger.info(`Skipped guild: ${guild.name}`);
+      //   continue;
+      // }
 
       const isDone = await prisma.importOldData.findUnique({
         where: { id: guild.id },

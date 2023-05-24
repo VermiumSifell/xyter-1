@@ -4,7 +4,12 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../helpers/deferReply";
-import * as reputation from "../../../modules/reputation";
+import generateCooldownName from "../../../helpers/generateCooldownName";
+import CooldownManager from "../../../managers/cooldown";
+import ReputationManager from "../../../managers/reputation";
+
+const cooldownManager = new CooldownManager();
+const reputationManager = new ReputationManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -31,44 +36,49 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 export const execute = async (interaction: ChatInputCommandInteraction) => {
   const { options, user, guild } = interaction;
   await deferReply(interaction, true);
-  if (!guild) throw new Error("This command can only be used in guilds");
 
-  const reputationUser = options.getUser("user");
+  if (!guild) {
+    throw new Error("This command can only be used in guilds");
+  }
+
+  const targetUser = options.getUser("user", true);
   const reputationType = options.getString("type", true);
 
-  if (!reputationUser) {
+  if (!targetUser) {
     throw new Error(
       "Sorry, we were unable to find the user you are trying to give reputation to."
     );
   }
 
-  if (!(reputationType === "positive" || reputationType === "negative")) {
+  if (reputationType !== "positive" && reputationType !== "negative") {
     throw new Error("Invalid reputation type");
   }
 
-  if (user.id === reputationUser.id) {
+  if (user.id === targetUser.id) {
     throw new Error("It is not possible to give yourself reputation.");
   }
 
-  await reputation.repute(reputationUser, reputationType);
+  await reputationManager.repute(targetUser, reputationType);
 
-  let emoji = "";
-  if (reputationType === "positive") {
-    emoji = "😊";
-  } else if (reputationType === "negative") {
-    emoji = "😔";
-  }
+  const emoji = reputationType === "positive" ? "😊" : "😔";
 
-  const interactionMessage = `You have successfully given ${emoji} ${reputationType} reputation to ${reputationUser}!`;
+  const interactionMessage = `You have successfully given ${emoji} ${reputationType} reputation to ${targetUser}!`;
 
   const interactionEmbed = new EmbedBuilder()
     .setAuthor({
-      name: `Reputing ${reputationUser.username}`,
-      iconURL: reputationUser.displayAvatarURL(),
+      name: `Reputing ${targetUser.username}`,
+      iconURL: targetUser.displayAvatarURL(),
     })
     .setDescription(interactionMessage)
     .setTimestamp()
     .setColor(process.env.EMBED_COLOR_SUCCESS);
 
   await interaction.editReply({ embeds: [interactionEmbed] });
+
+  await cooldownManager.setGuildMemberCooldown(
+    await generateCooldownName(interaction),
+    guild,
+    user,
+    24 * 60 * 60
+  );
 };

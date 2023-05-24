@@ -20,5 +20,5 @@ export const execute = async (client: Client) => {
   updatePresence(client);
   await registerCommands(client);
 
-  //await importOldData(client);
+  //  await importOldData(client);
 };

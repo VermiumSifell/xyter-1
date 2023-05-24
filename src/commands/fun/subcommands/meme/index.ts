@@ -9,7 +9,7 @@ import {
   TextChannel,
 } from "discord.js";
 import deferReply from "../../../../helpers/deferReply";
-import { generateInteraction } from "../../../../helpers/generateCooldownName";
+import generateCooldownName from "../../../../helpers/generateCooldownName";
 import CooldownManager from "../../../../managers/cooldown";
 
 const cooldownManager = new CooldownManager();
@@ -24,7 +24,7 @@ export const execute = async (
   await deferReply(interaction, false);
 
   const { channel, guild, user } = interaction;
-  const cooldownItem = await generateInteraction(interaction);
+  const cooldownItem = await generateCooldownName(interaction);
   const cooldownDuration = 15; // 10 seconds
 
   try {
@@ -50,16 +50,12 @@ export const execute = async (
   if (guild) {
     await cooldownManager.setGuildMemberCooldown(
       cooldownItem,
-      guild?.id ?? "",
-      user.id,
+      guild,
+      user,
       cooldownDuration
     );
   } else {
-    await cooldownManager.setUserCooldown(
-      cooldownItem,
-      user.id,
-      cooldownDuration
-    );
+    await cooldownManager.setUserCooldown(cooldownItem, user, cooldownDuration);
   }
 };
 

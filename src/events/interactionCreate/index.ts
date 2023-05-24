@@ -2,8 +2,8 @@ import { BaseInteraction, InteractionType } from "discord.js";
 import upsertGuildMember from "../../helpers/upsertGuildMember";
 import { IEventOptions } from "../../interfaces/EventOptions";
 import logger from "../../middlewares/logger";
-import button from "./handlers/button";
-import chatInputCommand from "./handlers/chatInputCommand";
+import button from "./interactionTypes/button";
+import chatInputCommand from "./interactionTypes/chatInputCommand";
 
 export const options: IEventOptions = {
   type: "on",
