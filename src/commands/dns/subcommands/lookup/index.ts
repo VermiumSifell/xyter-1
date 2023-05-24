@@ -5,16 +5,20 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import dns from "node:dns";
+import { promisify } from "util";
 import deferReply from "../../../../helpers/deferReply";
-import { generateInteraction } from "../../../../helpers/generateCooldownName";
-import CooldownManager from "../../../../managers/cooldown";
+import generateCooldownName from "../../../../helpers/generateCooldownName";
+import cooldown from "../../../../managers/cooldown";
+import sendResponse from "../../../../utils/sendResponse";
 
-const cooldownManager = new CooldownManager();
+const dnsLookup = promisify(dns.lookup);
 
-export const builder = (command: SlashCommandSubcommandBuilder) => {
+export const builder = (
+  command: SlashCommandSubcommandBuilder
+): SlashCommandSubcommandBuilder => {
   return command
     .setName("lookup")
-    .setDescription("Lookup a domain or ip.")
+    .setDescription("Lookup a domain or IP.")
     .addStringOption((option) =>
       option
         .setName("query")
@@ -23,36 +27,37 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     );
 };
 
-export const execute = async (interaction: ChatInputCommandInteraction) => {
+export const execute = async (
+  interaction: ChatInputCommandInteraction
+): Promise<void> => {
   await deferReply(interaction, false);
 
-  const { options, user, guild } = interaction;
-
+  const { user, guild, options } = interaction;
   const query = options.getString("query", true);
 
-  dns.lookup(query, async (err, address, family) => {
-    await axios.get(`https://ipinfo.io/${address}`).then(async (response) => {
-      const { data } = response;
+  try {
+    const { address } = await dnsLookup(query);
 
-      await interaction.editReply({
-        embeds: [
-          new EmbedBuilder()
-            .setAuthor({
-              name: `Powered using IPinfo.io`,
-              url: "https://ipinfo.io",
-              iconURL: "https://ipinfo.io/static/favicon-96x96.png?v3",
-            })
-            .setColor(process.env.EMBED_COLOR_SUCCESS)
-            .setFooter({
-              text: `Requested by ${user.username}`,
-              iconURL: user.displayAvatarURL(),
-            })
-            .setTimestamp().setDescription(`
+    const { data } = await axios.get(`https://ipinfo.io/${address}`);
+
+    await sendResponse(interaction, {
+      embeds: [
+        new EmbedBuilder()
+          .setAuthor({
+            name: `Powered using IPinfo.io`,
+            url: "https://ipinfo.io",
+            iconURL: "https://ipinfo.io/static/favicon-96x96.png?v3",
+          })
+          .setColor(process.env.EMBED_COLOR_SUCCESS)
+          .setFooter({
+            text: `Requested by ${user.username}`,
+            iconURL: user.displayAvatarURL(),
+          })
+          .setTimestamp().setDescription(`
             **IP**: ${data.ip}
             **Hostname**: ${data.hostname}
             **Organization**: ${data.org}
             **Anycast**: ${data.anycast ? "Yes" : "No"}
-
             **City**: ${data.city}
             **Region**: ${data.region}
             **Country**: ${data.country}
@@ -60,23 +65,29 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
             **Postal**: ${data.postal}
             **Timezone**: ${data.timezone}
           `),
-        ],
-      });
+      ],
     });
-  });
 
-  if (guild) {
-    await cooldownManager.setGuildMemberCooldown(
-      await generateInteraction(interaction),
-      guild.id,
-      user.id,
-      15
-    );
-  } else {
-    await cooldownManager.setUserCooldown(
-      await generateInteraction(interaction),
-      user.id,
-      15
-    );
+    const cooldownName = await generateCooldownName(interaction);
+    const cooldownDuration = 5;
+
+    if (guild) {
+      await cooldown.setGuildMemberCooldown(
+        cooldownName,
+        guild,
+        user,
+        cooldownDuration
+      );
+    } else {
+      await cooldown.setUserCooldown(cooldownName, user, cooldownDuration);
+    }
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOTFOUND") {
+      throw new Error(
+        `Sorry, we couldn't find the address for the requested query: ${query}.`
+      );
+    } else {
+      throw error;
+    }
   }
 };
