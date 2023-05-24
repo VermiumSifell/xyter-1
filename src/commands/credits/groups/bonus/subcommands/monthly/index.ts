@@ -3,15 +3,16 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import prisma from "../../../../../../handlers/prisma";
 import deferReply from "../../../../../../helpers/deferReply";
 import generateCooldownName from "../../../../../../helpers/generateCooldownName";
-import CooldownManager from "../../../../../../managers/cooldown";
+import cooldown from "../../../../../../managers/cooldown";
 import economy from "../../../../../../modules/credits";
 
-const cooldownManager = new CooldownManager();
-
 export const builder = (command: SlashCommandSubcommandBuilder) => {
-  return command.setName("monthly").setDescription("Get monthly bonus.");
+  return command
+    .setName("monthly")
+    .setDescription("Claim your monthly treasure!");
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
@@ -21,39 +22,48 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!guild) {
     throw new Error(
-      "Oops! It seems like you're not part of a guild. Join a guild to use this command!"
+      "Oops! It looks like you're not part of a guild. Join a guild to embark on this adventure!"
     );
   }
 
   if (!user) {
     throw new Error(
-      "Oops! It looks like we couldn't find your user information. Please try again or contact support for assistance."
+      "Oops! We couldn't find your user information. Please try again or contact support for assistance."
     );
   }
 
-  const monthlyBonus = 150; // Monthly bonus amount
-  await economy.give(guild, user, monthlyBonus);
+  const guildCreditsSettings = await prisma.guildCreditsSettings.upsert({
+    where: { id: guild.id },
+    update: {},
+    create: { id: guild.id },
+  });
+
+  const monthlyBonusAmount = guildCreditsSettings.monthlyBonusAmount;
+  const userEconomy = await economy.give(guild, user, monthlyBonusAmount);
 
   const embed = new EmbedBuilder()
     .setColor(process.env.EMBED_COLOR_SUCCESS)
-    .setDescription(
-      `🎉 You claimed your monthly bonus of **${monthlyBonus} credits**!`
-    )
     .setAuthor({
-      name: "Monthly Bonus Claimed",
+      name: "🌟 Monthly Treasure Claimed",
     })
-    .setTimestamp()
+    .setThumbnail(user.displayAvatarURL())
+    .setDescription(
+      `You've just claimed your monthly treasure of **${monthlyBonusAmount} credits**! 🎉\nEmbark on an epic adventure and spend your riches wisely.\n\n💰 **Your balance**: ${userEconomy.balance} credits`
+    )
     .setFooter({
       text: `Claimed by ${user.username}`,
       iconURL: user.displayAvatarURL() || "",
-    });
+    })
+    .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
 
-  await cooldownManager.setGuildMemberCooldown(
-    await generateCooldownName(interaction),
+  const cooldownDuration = 24 * 60 * 60; // 24 hours in seconds
+  const cooldownName = await generateCooldownName(interaction);
+  await cooldown.setGuildMemberCooldown(
+    cooldownName,
     guild,
     user,
-    30 * 24 * 60 * 60
-  ); // Set cooldown for 30 days
+    cooldownDuration
+  );
 };

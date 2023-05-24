@@ -1,7 +1,9 @@
+import { GuildMemberCredit } from "@prisma/client";
 import {
-  CommandInteraction,
+  ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
+  User,
 } from "discord.js";
 import deferReply from "../../../../helpers/deferReply";
 import credits from "../../../../modules/credits";
@@ -20,9 +22,9 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     );
 };
 
-export const execute = async (interaction: CommandInteraction) => {
+export const execute = async (interaction: ChatInputCommandInteraction) => {
   const { options, user, guild } = interaction;
-  await deferReply(interaction, true);
+  await deferReply(interaction, false);
 
   if (!guild) {
     throw new Error("This command can only be used in guild environments. ❌");
@@ -31,36 +33,60 @@ export const execute = async (interaction: CommandInteraction) => {
   const checkAccount = options.getUser("account") || user;
   const creditAccount = await credits.balance(guild, checkAccount);
 
+  const isUserCheckAccount = checkAccount.id === user.id;
+  const pronoun = isUserCheckAccount ? "You" : "They";
+  const possessivePronoun = isUserCheckAccount ? "Your" : "Their";
+
+  const description = getAccountBalanceDescription(
+    creditAccount,
+    checkAccount,
+    isUserCheckAccount,
+    pronoun,
+    possessivePronoun
+  );
+
+  await sendAccountBalanceEmbed(
+    interaction,
+    description,
+    checkAccount,
+    pronoun,
+    possessivePronoun
+  );
+};
+
+const getAccountBalanceDescription = (
+  creditAccount: GuildMemberCredit,
+  checkAccount: User,
+  isUserCheckAccount: boolean,
+  pronoun: string,
+  possessivePronoun: string
+) => {
   let description = `${
-    checkAccount.id !== user.id
-      ? `${checkAccount} currently has`
-      : "You currently have"
-  } ${creditAccount.balance} credits. 💰\n\n`;
+    isUserCheckAccount ? "You" : checkAccount
+  } currently have ${creditAccount.balance} credits. 💰\n\n`;
 
   if (creditAccount.balance === 0) {
-    description += `${
-      checkAccount.id !== user.id ? "Their" : "Your"
-    } wallet is empty. Encourage ${
-      checkAccount.id !== user.id ? "them" : "yourself"
+    description += `${possessivePronoun} wallet is empty. Encourage ${
+      isUserCheckAccount ? "yourself" : "them"
     } to start earning credits by participating in community events and challenges!`;
   } else if (creditAccount.balance < 100) {
-    description += `${
-      checkAccount.id !== user.id ? "They're" : "You're"
-    } making progress! Keep earning credits and unlock exciting rewards.`;
+    description += `${pronoun}'re making progress! Keep earning credits and unlock exciting rewards.`;
   } else if (creditAccount.balance < 500) {
-    description += `${
-      checkAccount.id !== user.id ? "Great job! Their" : "Great job! Your"
-    } account balance is growing. ${
-      checkAccount.id !== user.id ? "They're" : "You're"
-    } on ${
-      checkAccount.id !== user.id ? "their" : "your"
-    } way to becoming a credit millionaire!`;
+    description += `Great job! ${possessivePronoun} account balance is growing. ${pronoun}'re on ${possessivePronoun.toLowerCase()} way to becoming a credit millionaire!`;
   } else {
-    description += `${
-      checkAccount.id !== user.id ? "Wow! They're" : "Wow! You're"
-    } a credit master with a substantial account balance. Enjoy the perks and exclusive benefits!`;
+    description += `Wow! ${pronoun}'re a credit master with a substantial account balance. Enjoy the perks and exclusive benefits!`;
   }
 
+  return description;
+};
+
+const sendAccountBalanceEmbed = async (
+  interaction: ChatInputCommandInteraction,
+  description: string,
+  checkAccount: User,
+  pronoun: string,
+  possessivePronoun: string
+) => {
   await sendResponse(interaction, {
     embeds: [
       new EmbedBuilder()
@@ -69,11 +95,7 @@ export const execute = async (interaction: CommandInteraction) => {
         .setDescription(description)
         .setThumbnail(checkAccount.displayAvatarURL())
         .setFooter({
-          text: `${
-            checkAccount.id !== user.id ? "Their" : "Your"
-          } credit balance reflects ${
-            checkAccount.id !== user.id ? "their" : "your"
-          } community engagement!`,
+          text: `${possessivePronoun} credit balance reflects ${possessivePronoun.toLowerCase()} community engagement!`,
         })
         .setTimestamp(),
     ],

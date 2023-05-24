@@ -3,15 +3,14 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import prisma from "../../../../../../handlers/prisma";
 import deferReply from "../../../../../../helpers/deferReply";
 import generateCooldownName from "../../../../../../helpers/generateCooldownName";
-import CooldownManager from "../../../../../../managers/cooldown";
+import cooldown from "../../../../../../managers/cooldown";
 import economy from "../../../../../../modules/credits";
 
-const cooldownManager = new CooldownManager();
-
 export const builder = (command: SlashCommandSubcommandBuilder) => {
-  return command.setName("daily").setDescription("Get daily bonus.");
+  return command.setName("daily").setDescription("Claim your daily treasure!");
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
@@ -21,39 +20,48 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!guild) {
     throw new Error(
-      "Oops! It seems like you're not part of a guild. Join a guild to use this command!"
+      "Oops! It looks like you're not part of a guild. Join a guild to embark on this adventure!"
     );
   }
 
   if (!user) {
     throw new Error(
-      "Oops! It looks like we couldn't find your user information. Please try again or contact support for assistance."
+      "Oops! We couldn't find your user information. Please try again or contact support for assistance."
     );
   }
 
-  const dailyBonus = 25; // Daily bonus amount
-  await economy.give(guild, user, dailyBonus);
+  const guildCreditsSettings = await prisma.guildCreditsSettings.upsert({
+    where: { id: guild.id },
+    update: {},
+    create: { id: guild.id },
+  });
+
+  const dailyBonusAmount = guildCreditsSettings.dailyBonusAmount;
+  const userEconomy = await economy.give(guild, user, dailyBonusAmount);
 
   const embed = new EmbedBuilder()
     .setColor(process.env.EMBED_COLOR_SUCCESS)
-    .setDescription(
-      `🎉 You claimed your daily bonus of **${dailyBonus} credits**!`
-    )
     .setAuthor({
-      name: "Daily Bonus Claimed",
+      name: "🌟 Daily Treasure Claimed",
     })
-    .setTimestamp()
+    .setThumbnail(user.displayAvatarURL())
+    .setDescription(
+      `You've just claimed your daily treasure of **${dailyBonusAmount} credits**! 🎉\nEmbark on an epic adventure and spend your riches wisely.\n\n💰 **Your balance**: ${userEconomy.balance} credits`
+    )
     .setFooter({
       text: `Claimed by ${user.username}`,
       iconURL: user.displayAvatarURL() || "",
-    });
+    })
+    .setTimestamp();
 
   await interaction.editReply({ embeds: [embed] });
 
-  await cooldownManager.setGuildMemberCooldown(
-    await generateCooldownName(interaction),
+  const cooldownDuration = 24 * 60 * 60; // 24 hours in seconds
+  const cooldownName = await generateCooldownName(interaction);
+  await cooldown.setGuildMemberCooldown(
+    cooldownName,
     guild,
     user,
-    24 * 60 * 60
+    cooldownDuration
   );
 };

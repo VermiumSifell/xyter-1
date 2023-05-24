@@ -81,16 +81,24 @@ model GuildCreditsSettings {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  guild             Guild           @relation(fields: [id], references: [id])
-  workBonusChance   Int             @default(30)
-  workPenaltyChance Int             @default(10)
-  status            Boolean         @default(false)
-  rate              Int             @default(1)
-  timeout           Int             @default(5)
-  workRate          Int             @default(25)
-  workTimeout       Int             @default(86400)
-  minimumLength     Int             @default(5)
-  guildSettings     GuildSettings[]
+  guild Guild @relation(fields: [id], references: [id])
+
+  // Work commands
+  workBonusChance   Int @default(30)
+  workPenaltyChance Int @default(10)
+
+  // Bonus commands
+  dailyBonusAmount   Int @default(25)
+  weeklyBonusAmount  Int @default(50)
+  monthlyBonusAmount Int @default(150)
+
+  status        Boolean         @default(false)
+  rate          Int             @default(1)
+  timeout       Int             @default(5)
+  workRate      Int             @default(25)
+  workTimeout   Int             @default(86400)
+  minimumLength Int             @default(5)
+  guildSettings GuildSettings[]
 }
 
 model ApiCredentials {
