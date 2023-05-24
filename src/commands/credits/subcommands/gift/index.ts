@@ -61,7 +61,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setColor(process.env.EMBED_COLOR_SUCCESS)
     .setDescription(`You've received a gift of ${amount} credits!`)
     .setFooter({
-      text: `Sent by ${user.username}`,
+      text: `Sent by ${user.username} in guild ${guild.name}`,
       iconURL: user.displayAvatarURL(),
     });
 

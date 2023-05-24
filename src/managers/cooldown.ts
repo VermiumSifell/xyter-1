@@ -149,4 +149,4 @@ class CooldownManager {
   }
 }
 
-export default CooldownManager;
+export default new CooldownManager();

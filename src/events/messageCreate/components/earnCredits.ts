@@ -1,52 +1,61 @@
-import { ChannelType, Message } from "discord.js";
-import CooldownManager from "../../../managers/cooldown";
+import { Channel, ChannelType, Guild, Message, User } from "discord.js";
+import cooldown from "../../../managers/cooldown";
 import logger from "../../../middlewares/logger";
 import economy from "../../../modules/credits";
 
 const MINIMUM_LENGTH = 5;
 
-const cooldownManager = new CooldownManager();
+const cooldownName = "earnCredits";
 
 export default async (message: Message) => {
   const { guild, author, channel, content } = message;
 
-  if (!guild) return;
-  if (author.bot) return;
-  if (channel.type !== ChannelType.GuildText) return;
+  if (!guild || !isMessageValid(guild, author, channel, content)) {
+    return;
+  }
 
-  if (content.length < MINIMUM_LENGTH) return;
-
-  if (await isUserOnCooldown(guild.id, author.id)) {
-    const guildName = guild.name;
+  if (await isUserOnCooldown(guild, author)) {
     logger.verbose(
-      `User ${author.username} is on cooldown in guild ${guildName}`
+      `User "${author.username}" is on cooldown for "${cooldownName}" in guild "${guild.name}"`
     );
     return;
   }
 
   try {
     await economy.give(guild, author, 1);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error(
-      `Failed to give credits to user ${author.username} in guild ${guild.name} when sending a message: ${error.message}`
+      `Failed to give credits to user ${author.username} in guild ${
+        guild.name
+      } when sending a message: ${String(error)}`
     );
   }
 
-  await setCooldown(guild.id, author.id);
+  await setCooldown(guild, author);
 };
 
-async function isUserOnCooldown(
-  guildId: string,
-  authorId: string
-): Promise<boolean> {
-  const cooldownActive = await cooldownManager.checkGuildMemberCooldown(
-    "credits",
-    guildId,
-    authorId
+function isMessageValid(
+  guild: Guild,
+  author: User,
+  channel: Channel,
+  content: string
+): boolean {
+  return (
+    !author.bot &&
+    channel.type === ChannelType.GuildText &&
+    content.length >= MINIMUM_LENGTH
+  );
+}
+
+async function isUserOnCooldown(guild: Guild, author: User): Promise<boolean> {
+  const cooldownActive = await cooldown.checkGuildMemberCooldown(
+    cooldownName,
+    guild,
+    author
   );
   return cooldownActive !== null;
 }
 
-async function setCooldown(guildId: string, authorId: string) {
-  await cooldownManager.setGuildMemberCooldown("credits", guildId, authorId, 5);
+async function setCooldown(guild: Guild, user: User) {
+  await cooldown.setGuildMemberCooldown(cooldownName, guild, user, 5);
 }
