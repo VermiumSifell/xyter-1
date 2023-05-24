@@ -28,12 +28,7 @@ export default async function handleError(
         .setLabel("Report Problem")
         .setStyle(ButtonStyle.Link)
         .setEmoji("✏️")
-        .setURL("https://discord.zyner.org"),
-      new ButtonBuilder()
-        .setLabel("Test")
-        .setStyle(ButtonStyle.Primary)
-        .setCustomId("primary")
-        .setEmoji("✏️")
+        .setURL("https://discord.zyner.org")
     );
 
     const errorDetailsValue =
