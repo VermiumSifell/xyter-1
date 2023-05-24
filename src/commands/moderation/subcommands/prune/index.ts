@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import checkPermission from "../../../../helpers/checkPermission";
 import deferReply from "../../../../helpers/deferReply";
+import sendResponse from "../../../../utils/sendResponse";
 
 // Function
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -60,22 +61,25 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       return filteredMessages;
     });
 
+  const firstMessage = messagesToDelete.first();
+  if (firstMessage) messagesToDelete.delete(firstMessage.id);
+
   const messagesToDeleteArray = [...messagesToDelete.values()]; // Convert Collection to an array
 
   await channel.bulkDelete(messagesToDeleteArray, true).then(async () => {
     const interactionEmbed = new EmbedBuilder()
-      .setAuthor({ name: "Clearing chat history" })
-      .setDescription(
-        `Successfully deleted a total of ${messagesToDeleteArray.length} messages.`
-      )
-      .setTimestamp(new Date())
       .setColor(process.env.EMBED_COLOR_SUCCESS)
+      .setAuthor({ name: "🤖 Moderation" })
+      .setDescription(
+        `Successfully deleted ${messagesToDeleteArray.length} messages.`
+      )
       .setFooter({
         text: `Action by ${user.username}`,
         iconURL: user.displayAvatarURL(),
-      });
+      })
+      .setTimestamp();
 
-    await interaction.editReply({
+    await sendResponse(interaction, {
       embeds: [interactionEmbed],
     });
   });

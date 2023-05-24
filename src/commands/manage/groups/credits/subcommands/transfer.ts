@@ -7,6 +7,7 @@ import {
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
 import economy from "../../../../../modules/credits";
+import sendResponse from "../../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -29,6 +30,8 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
         .setName("amount")
         .setDescription(`The amount of credits to set.`)
         .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(2147483647)
     );
 };
 
@@ -102,5 +105,5 @@ export const execute = async (
     });
   }
 
-  await interaction.editReply({ embeds: [transferEmbed] });
+  await sendResponse(interaction, { embeds: [transferEmbed] });
 };

@@ -6,7 +6,8 @@ import {
 } from "discord.js";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import economy from "../../../../../modules/credits";
+import credits from "../../../../../managers/credits";
+import sendResponse from "../../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -23,6 +24,8 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
         .setName("amount")
         .setDescription(`The amount of credits to take.`)
         .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(2147483647)
     );
 };
 
@@ -47,18 +50,18 @@ export const execute = async (
   }
 
   const embedSuccess = new EmbedBuilder()
-    .setColor(process.env.EMBED_COLOR_SUCCESS) // Blue color for an administrative look
-    .setAuthor({ name: "Administrative Action" }) // Update the author name
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
+    .setAuthor({ name: "💳 Credits Manager" })
     .setDescription(
-      `Successfully took ${creditsAmount} credits to the user. This is an administrative action.`
-    ) // Modify the description to convey authority
+      `    Successfully took ${creditsAmount} credits to the user.`
+    )
     .setFooter({
       text: `Action by ${user.username}`,
       iconURL: user.displayAvatarURL(),
     })
     .setTimestamp();
 
-  await economy.take(guild, discordReceiver, creditsAmount);
+  await credits.take(guild, discordReceiver, creditsAmount);
 
-  await interaction.editReply({ embeds: [embedSuccess] });
+  await sendResponse(interaction, { embeds: [embedSuccess] });
 };

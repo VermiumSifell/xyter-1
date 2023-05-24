@@ -6,9 +6,12 @@ import {
 } from "discord.js";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import economy from "../../../../../modules/credits";
+import credits from "../../../../../managers/credits";
+import sendResponse from "../../../../../utils/sendResponse";
 
-export const builder = (command: SlashCommandSubcommandBuilder) => {
+export const builder = (
+  command: SlashCommandSubcommandBuilder
+): SlashCommandSubcommandBuilder => {
   return command
     .setName("give")
     .setDescription("Give credits to a user.")
@@ -21,8 +24,10 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
     .addIntegerOption((option) =>
       option
         .setName("amount")
-        .setDescription(`The amount of credits to give.`)
+        .setDescription("The amount of credits to give.")
         .setRequired(true)
+        .setMinValue(1)
+        .setMaxValue(2147483647)
     );
 };
 
@@ -38,8 +43,8 @@ export const execute = async (
     throw new Error("We could not get the current guild from Discord.");
   }
 
-  const discordReceiver = options.getUser("user");
-  const creditsAmount = options.getInteger("amount");
+  const discordReceiver = options.getUser("user", true);
+  const creditsAmount = options.getInteger("amount", true);
 
   if (!discordReceiver || typeof creditsAmount !== "number") {
     await interaction.editReply("Invalid user or credit amount provided.");
@@ -47,18 +52,18 @@ export const execute = async (
   }
 
   const embedSuccess = new EmbedBuilder()
-    .setColor(process.env.EMBED_COLOR_SUCCESS) // Blue color for an administrative look
-    .setAuthor({ name: "Administrative Action" }) // Update the author name
+    .setColor(process.env.EMBED_COLOR_SUCCESS)
+    .setAuthor({ name: "💳 Credits Manager" })
     .setDescription(
-      `Successfully granted ${creditsAmount} credits to the user. This is an administrative action.`
-    ) // Modify the description to convey authority
+      `    Successfully gave ${creditsAmount} credits to the user.`
+    )
     .setFooter({
       text: `Action by ${user.username}`,
       iconURL: user.displayAvatarURL(),
     })
     .setTimestamp();
 
-  await economy.give(guild, discordReceiver, creditsAmount);
+  await credits.give(guild, discordReceiver, creditsAmount);
 
-  await interaction.editReply({ embeds: [embedSuccess] });
+  await sendResponse(interaction, { embeds: [embedSuccess] });
 };
