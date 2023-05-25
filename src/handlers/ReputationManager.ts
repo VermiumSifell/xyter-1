@@ -87,4 +87,4 @@ class ReputationManager {
   }
 }
 
-export default new ReputationManager();
+export default ReputationManager;

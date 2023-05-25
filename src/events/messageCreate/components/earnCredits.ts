@@ -1,5 +1,5 @@
 import { Channel, ChannelType, Guild, Message, User } from "discord.js";
-import cooldown from "../../../managers/cooldown";
+import cooldown from "../../../handlers/CooldownManager";
 import economy from "../../../modules/credits";
 import logger from "../../../utils/logger";
 

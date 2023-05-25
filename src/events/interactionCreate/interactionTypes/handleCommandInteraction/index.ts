@@ -1,6 +1,6 @@
 import { CommandInteraction } from "discord.js";
+import cooldown from "../../../../handlers/CooldownManager";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import cooldown from "../../../../managers/cooldown";
 import handleCooldown from "./handlers/handleCooldown";
 import handleError from "./handlers/handleError";
 import handleUnavailableCommand from "./handlers/handleUnavailableCommand";

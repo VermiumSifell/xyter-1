@@ -4,10 +4,10 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import cooldown from "../../../../handlers/CooldownManager";
 import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import cooldown from "../../../../managers/cooldown";
 import economy from "../../../../modules/credits";
 import jobs from "./jobs";
 

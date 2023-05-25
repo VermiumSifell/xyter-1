@@ -8,9 +8,9 @@ import {
   SlashCommandSubcommandBuilder,
   TextChannel,
 } from "discord.js";
+import cooldown from "../../../../handlers/CooldownManager";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import cooldown from "../../../../managers/cooldown";
 
 interface MemeContent {
   title: string;

@@ -6,9 +6,9 @@ import {
 } from "discord.js";
 import dns from "node:dns";
 import { promisify } from "util";
+import cooldown from "../../../../handlers/CooldownManager";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import cooldown from "../../../../managers/cooldown";
 import sendResponse from "../../../../utils/sendResponse";
 
 const dnsLookup = promisify(dns.lookup);
