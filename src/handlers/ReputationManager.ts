@@ -1,5 +1,5 @@
 import { User } from "discord.js";
-import prisma from "../handlers/prisma";
+import prisma from "./prisma";
 
 class ReputationManager {
   async check(user: User) {

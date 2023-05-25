@@ -3,8 +3,8 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import reputation from "../../../handlers/ReputationManager";
 import deferReply from "../../../helpers/deferReply";
-import reputation from "../../../managers/reputation";
 import sendResponse from "../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
