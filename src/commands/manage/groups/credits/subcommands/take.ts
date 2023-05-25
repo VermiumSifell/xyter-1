@@ -4,9 +4,9 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import credits from "../../../../../handlers/CreditsManager";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import credits from "../../../../../managers/credits";
 import sendResponse from "../../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
