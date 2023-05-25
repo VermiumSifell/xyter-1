@@ -1,7 +1,7 @@
 import { Client, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
 import checkDirectory from "../helpers/readDirectory";
 import { ICommand } from "../interfaces/Command";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 export default async (client: Client) => {
   const profiler = logger.startTimer();

@@ -1,7 +1,7 @@
 import { GuildMember } from "discord.js";
 import prisma from "../../handlers/prisma";
 import { IEventOptions } from "../../interfaces/EventOptions";
-import logger from "../../middlewares/logger";
+import logger from "../../utils/logger";
 
 export const options: IEventOptions = {
   type: "on",

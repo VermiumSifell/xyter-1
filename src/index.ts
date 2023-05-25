@@ -2,7 +2,7 @@ import { Client, Collection, GatewayIntentBits } from "discord.js";
 import "dotenv/config";
 import registerEvents from "./handlers/registerEvents";
 import scheduleJobs from "./handlers/scheduleJobs";
-import logger from "./middlewares/logger";
+import logger from "./utils/logger";
 
 (async () => {
   try {

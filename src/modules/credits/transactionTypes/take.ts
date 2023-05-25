@@ -1,6 +1,6 @@
 import { Guild, User } from "discord.js";
 import prisma from "../../../handlers/prisma";
-import logger from "../../../middlewares/logger";
+import logger from "../../../utils/logger";
 import validateTransaction from "../validateTransaction";
 
 export default async (guild: Guild, user: User, amount: number) => {

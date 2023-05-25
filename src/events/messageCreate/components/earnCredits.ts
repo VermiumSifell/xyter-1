@@ -1,7 +1,7 @@
 import { Channel, ChannelType, Guild, Message, User } from "discord.js";
 import cooldown from "../../../managers/cooldown";
-import logger from "../../../middlewares/logger";
 import economy from "../../../modules/credits";
+import logger from "../../../utils/logger";
 
 const MINIMUM_LENGTH = 5;
 

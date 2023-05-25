@@ -1,6 +1,6 @@
 import { Guild, User } from "discord.js";
 import prisma from "../handlers/prisma";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 class CreditsManager {
   async validateTransaction(guild: Guild, user: User, amount: number) {

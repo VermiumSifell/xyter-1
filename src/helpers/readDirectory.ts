@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 export default async (filePath: string) => {
   const directoryPath = path.join(process.cwd(), "dist", filePath);

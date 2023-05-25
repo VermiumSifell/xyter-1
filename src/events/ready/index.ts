@@ -3,7 +3,7 @@ import { Client } from "discord.js";
 import registerCommands from "../../handlers/registerCommands";
 import updatePresence from "../../helpers/updatePresence";
 import { IEventOptions } from "../../interfaces/EventOptions";
-import logger from "../../middlewares/logger";
+import logger from "../../utils/logger";
 
 export const options: IEventOptions = {
   type: "once",

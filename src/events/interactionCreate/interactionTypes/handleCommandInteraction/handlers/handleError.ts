@@ -6,7 +6,7 @@ import {
   EmbedBuilder,
   codeBlock,
 } from "discord.js";
-import logger from "../../../../../middlewares/logger";
+import logger from "../../../../../utils/logger";
 import sendResponse from "../../../../../utils/sendResponse";
 
 export default async function handleError(

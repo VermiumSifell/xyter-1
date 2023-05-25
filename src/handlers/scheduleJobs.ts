@@ -2,7 +2,7 @@ import { Client } from "discord.js";
 import schedule from "node-schedule";
 import checkDirectory from "../helpers/readDirectory";
 import { IJob } from "../interfaces/Job";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 export default async (client: Client) => {
   const profiler = logger.startTimer();

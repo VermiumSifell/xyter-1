@@ -1,5 +1,5 @@
 import { ActivitiesOptions, ActivityType, Client } from "discord.js";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 export default async (client: Client) => {
   const { guilds, user } = client;

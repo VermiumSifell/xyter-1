@@ -2,8 +2,8 @@
 /* eslint-disable no-loops/no-loops */
 import { ChannelType, Client } from "discord.js";
 import prisma from "../../handlers/prisma";
-import logger from "../../middlewares/logger";
 import set from "../../modules/credits/transactionTypes/set";
+import logger from "../../utils/logger";
 
 export default async (client: Client) => {
   try {

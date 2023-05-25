@@ -1,7 +1,7 @@
 import { BaseInteraction } from "discord.js";
 import upsertGuildMember from "../../helpers/upsertGuildMember";
 import { IEventOptions } from "../../interfaces/EventOptions";
-import logger from "../../middlewares/logger";
+import logger from "../../utils/logger";
 import button from "./interactionTypes/button";
 import handleCommandInteraction from "./interactionTypes/handleCommandInteraction";
 

@@ -1,6 +1,6 @@
 import { Cooldown, PrismaClient } from "@prisma/client";
 import { Guild, User } from "discord.js";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 const prisma = new PrismaClient();
 

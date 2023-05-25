@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import logger from "../middlewares/logger";
+import logger from "../utils/logger";
 
 const prisma = new PrismaClient();
 const LATENCY_THRESHOLD = 1000; // Threshold in milliseconds

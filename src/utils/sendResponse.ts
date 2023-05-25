@@ -4,7 +4,7 @@ import {
   InteractionEditReplyOptions,
   InteractionReplyOptions,
 } from "discord.js";
-import logger from "../middlewares/logger";
+import logger from "./logger";
 
 export default async (
   interaction: CommandInteraction | ButtonInteraction,
