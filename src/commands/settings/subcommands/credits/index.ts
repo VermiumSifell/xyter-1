@@ -64,7 +64,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       id: guild.id,
       workBonusChance,
       workPenaltyChance,
-      GuildSettings: {
+      guildSettings: {
         connectOrCreate: {
           where: {
             id: guild.id,
