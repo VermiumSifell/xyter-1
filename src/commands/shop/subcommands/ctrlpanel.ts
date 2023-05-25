@@ -10,7 +10,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import deferReply from "../../../helpers/deferReply";
 import credits from "../../../modules/credits";
-import createVoucher from "../../../modules/ctrlpanel/features/createVoucher";
+import CtrlPanelAPI from "../../../services/CtrlPanelAPI";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -31,6 +31,8 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, true);
   if (!guild) throw new Error("This command can only be executed in a guild");
 
+  const ctrlPanelAPI = new CtrlPanelAPI(guild);
+
   const successColor = "#FFFFFF"; // Replace with the actual success color
   const footerText = "YOUR_FOOTER_TEXT"; // Replace with the actual footer text
   const footerIcon = "YOUR_FOOTER_ICON_URL"; // Replace with the actual footer icon URL
@@ -46,7 +48,11 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   const userDM = await client.users.fetch(user.id);
   const code = uuidv4();
-  const { redeemUrl } = await createVoucher(guild, code, withdrawAmount, 1);
+  const { redeemUrl } = await ctrlPanelAPI.generateVoucher(
+    code,
+    withdrawAmount,
+    1
+  );
 
   const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()

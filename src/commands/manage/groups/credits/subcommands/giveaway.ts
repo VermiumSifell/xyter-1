@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 // Configurations
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
-import createVoucher from "../../../../../modules/ctrlpanel/features/createVoucher";
+import CtrlPanelAPI from "../../../../../services/CtrlPanelAPI";
 
 // Function
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -47,6 +47,9 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   await deferReply(interaction, true);
   checkPermission(interaction, PermissionsBitField.Flags.ManageGuild);
 
+  if (!guild) throw new Error("This command can only be used in guilds");
+  const ctrlPanelAPI = new CtrlPanelAPI(guild);
+
   const uses = options?.getInteger("uses");
   const creditAmount = options?.getInteger("credit");
   const channel = options?.getChannel("channel");
@@ -62,7 +65,11 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setTimestamp(new Date());
 
   const code = uuidv4();
-  const { redeemUrl } = await createVoucher(guild, code, creditAmount, uses);
+  const { redeemUrl } = await ctrlPanelAPI.generateVoucher(
+    code,
+    creditAmount,
+    uses
+  );
 
   await interaction.editReply({
     embeds: [embedSuccess.setDescription(`Successfully created code: ${code}`)],
