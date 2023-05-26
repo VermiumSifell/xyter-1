@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from "axios";
 import { Guild } from "discord.js";
 import prisma from "../handlers/prisma";
-import Encryption, { EncryptedData } from "../helpers/encryption";
 import { upsertApiCredentials } from "../helpers/upsertApiCredentials";
+import Encryption, { EncryptedData } from "../utils/encryption";
 
 const encryption = new Encryption();
 
