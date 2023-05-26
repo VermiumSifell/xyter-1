@@ -1,57 +1,104 @@
-import crypto from "crypto";
-import { IEncryptionData } from "../interfaces/EncryptionData";
+import crypto, { CipherGCMTypes } from "crypto";
 
-const generateRandomIV = (): Buffer => {
-  return crypto.randomBytes(16);
+export type EncryptedData = {
+  iv: string;
+  content: string;
+  authTag: string;
 };
 
-const encrypt = (text: crypto.BinaryLike): IEncryptionData => {
-  const encryptionSecret = process.env.ENCRYPTION_SECRET;
-  const iv = generateRandomIV();
-  const cipher = crypto.createCipheriv("aes-256-cbc", encryptionSecret, iv);
-  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+class EncryptionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "EncryptionError";
+  }
+}
 
-  const hmac = crypto.createHmac("sha256", encryptionSecret);
-  hmac.update(encrypted);
-  const authenticationTag = hmac.digest("hex");
+class Encryption {
+  private encryptionSecret: Buffer;
+  private encryptionAlgorithm: CipherGCMTypes;
+  private encryptionKeyLength: number;
 
-  return {
-    iv: iv.toString("hex"),
-    content: encrypted.toString("hex"),
-    authenticationTag,
-  };
-};
+  constructor() {
+    const encryptionSecret = process.env.ENCRYPTION_SECRET;
 
-const decrypt = (hash: IEncryptionData): string => {
-  const encryptionSecret = process.env.ENCRYPTION_SECRET;
-  const ivBuffer = Buffer.from(hash.iv, "hex");
+    if (!encryptionSecret) {
+      throw new EncryptionError("Encryption secret is required.");
+    }
 
-  const decipher = crypto.createDecipheriv(
-    "aes-256-cbc",
-    encryptionSecret,
-    ivBuffer
-  );
-
-  const contentBuffer = Buffer.from(hash.content, "hex");
-  const decrypted = Buffer.concat([
-    decipher.update(contentBuffer),
-    decipher.final(),
-  ]);
-
-  const hmac = crypto.createHmac("sha256", encryptionSecret);
-  hmac.update(contentBuffer);
-  const expectedAuthenticationTag = hmac.digest("hex");
-
-  if (hash.authenticationTag !== expectedAuthenticationTag) {
-    throw new Error(
-      "Authentication failed. The encrypted data may have been tampered with."
-    );
+    this.encryptionSecret = crypto
+      .createHash("sha256")
+      .update(encryptionSecret)
+      .digest();
+    this.encryptionAlgorithm = "aes-256-gcm";
+    this.encryptionKeyLength = 32;
   }
 
-  return decrypted.toString();
-};
+  private generateRandomKey(length: number): Buffer {
+    return crypto.randomBytes(length);
+  }
 
-export default {
-  encrypt,
-  decrypt,
-};
+  private createCipher(iv: Buffer): crypto.CipherGCM {
+    const key = this.encryptionSecret.slice(0, this.encryptionKeyLength);
+    return crypto.createCipheriv(this.encryptionAlgorithm, key, iv);
+  }
+
+  private createDecipher(iv: Buffer): crypto.DecipherGCM {
+    const key = this.encryptionSecret.slice(0, this.encryptionKeyLength);
+    return crypto.createDecipheriv(this.encryptionAlgorithm, key, iv);
+  }
+
+  private transformData(
+    data: Buffer,
+    transform: crypto.CipherGCM | crypto.DecipherGCM
+  ): Buffer {
+    return Buffer.concat([transform.update(data), transform.final()]);
+  }
+
+  public async encrypt(text: string): Promise<EncryptedData> {
+    return new Promise<EncryptedData>((resolve, reject) => {
+      const iv = this.generateRandomKey(12);
+      const cipher = this.createCipher(iv);
+
+      let encrypted: Buffer;
+      let authTag: Buffer;
+
+      try {
+        encrypted = this.transformData(Buffer.from(text), cipher);
+        authTag = cipher.getAuthTag();
+      } catch (error) {
+        reject(new EncryptionError("Encryption failed."));
+        return;
+      }
+
+      resolve({
+        iv: iv.toString("hex"),
+        content: encrypted.toString("hex"),
+        authTag: authTag.toString("hex"),
+      });
+    });
+  }
+
+  public async decrypt(data: EncryptedData): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const iv = Buffer.from(data.iv, "hex");
+      const content = Buffer.from(data.content, "hex");
+      const authTag = Buffer.from(data.authTag, "hex");
+
+      const decipher = this.createDecipher(iv);
+      decipher.setAuthTag(authTag);
+
+      let decrypted: Buffer;
+
+      try {
+        decrypted = this.transformData(content, decipher);
+      } catch (error) {
+        reject(new EncryptionError("Decryption failed."));
+        return;
+      }
+
+      resolve(decrypted.toString());
+    });
+  }
+}
+
+export default Encryption;

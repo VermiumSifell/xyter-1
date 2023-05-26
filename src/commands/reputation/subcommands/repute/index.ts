@@ -3,11 +3,11 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import CooldownManager from "../../../handlers/CooldownManager";
-import ReputationManager from "../../../handlers/ReputationManager";
-import generateCooldownName from "../../../helpers/generateCooldownName";
-import deferReply from "../../../utils/deferReply";
-import sendResponse from "../../../utils/sendResponse";
+import CooldownManager from "../../../../handlers/CooldownManager";
+import ReputationManager from "../../../../handlers/ReputationManager";
+import generateCooldownName from "../../../../helpers/generateCooldownName";
+import deferReply from "../../../../utils/deferReply";
+import sendResponse from "../../../../utils/sendResponse";
 
 const cooldownManager = new CooldownManager();
 const reputationManager = new ReputationManager();

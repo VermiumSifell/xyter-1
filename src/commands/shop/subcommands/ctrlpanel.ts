@@ -8,10 +8,12 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
-import credits from "../../../modules/credits";
+import CreditsManager from "../../../handlers/CreditsManager";
 import CtrlPanelAPI from "../../../services/CtrlPanelAPI";
 import deferReply from "../../../utils/deferReply";
 import sendResponse from "../../../utils/sendResponse";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -28,70 +30,56 @@ export const builder = (command: SlashCommandSubcommandBuilder) => {
 };
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  const { options, guild, user, client } = interaction;
   await deferReply(interaction, true);
+
+  const { options, guild, user, client } = interaction;
   if (!guild) throw new Error("This command can only be executed in a guild");
 
   const ctrlPanelAPI = new CtrlPanelAPI(guild);
 
-  const successColor = "#FFFFFF"; // Replace with the actual success color
-  const footerText = "YOUR_FOOTER_TEXT"; // Replace with the actual footer text
-  const footerIcon = "YOUR_FOOTER_ICON_URL"; // Replace with the actual footer icon URL
+  const withdrawalAmount = options.getInteger("withdraw", true);
 
-  const withdrawAmount = options.getInteger("withdraw");
-  if (!withdrawAmount) throw new Error("You must specify a withdraw amount");
+  await creditsManager.take(guild, user, withdrawalAmount);
 
-  // if (!apiCredentials) {
-  //   throw new Error(
-  //     "Please ask the server administrator to configure the API credentials for CtrlPanel.gg to enable this functionality."
-  //   );
-  // }
-
-  const userDM = await client.users.fetch(user.id);
-  const code = uuidv4();
+  const voucherCode = uuidv4();
   const { redeemUrl } = await ctrlPanelAPI.generateVoucher(
-    code,
-    withdrawAmount,
+    voucherCode,
+    withdrawalAmount,
     1
   );
 
-  const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setLabel("Redeem it here")
-      .setStyle(ButtonStyle.Link)
-      .setEmoji("🏦")
-      .setURL(`${redeemUrl}`)
-  );
-
-  await credits.take(guild, user, withdrawAmount);
-
+  const userDM = await client.users.fetch(user.id);
   const dmEmbed = new EmbedBuilder()
     .setTitle(":shopping_cart:︱CPGG")
     .setDescription(`This voucher was generated in guild: **${guild.name}**.`)
     .setTimestamp()
     .addFields({
       name: "💶 Credits",
-      value: `${withdrawAmount}`,
+      value: `${withdrawalAmount}`,
       inline: true,
     })
-    .setColor(successColor)
-    .setFooter({ text: footerText, iconURL: footerIcon });
+    .setColor(process.env.EMBED_COLOR_SUCCESS);
 
-  await userDM
-    .send({
-      embeds: [dmEmbed],
-      components: [buttons],
-    })
-    .then(async (msg: Message) => {
-      const interactionEmbed = new EmbedBuilder()
-        .setTitle(":shopping_cart:︱CPGG")
-        .setDescription(`I have sent you the code in [DM](${msg.url})!`)
-        .setTimestamp()
-        .setColor(successColor)
-        .setFooter({ text: footerText, iconURL: footerIcon });
+  const redemptionButton = new ButtonBuilder()
+    .setLabel("Redeem it here")
+    .setStyle(ButtonStyle.Link)
+    .setEmoji("🏦")
+    .setURL(redeemUrl);
 
-      await sendResponse(interaction, { embeds: [interactionEmbed] });
-    });
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    redemptionButton
+  );
 
-  return true;
+  const dmMessage: Message = await userDM.send({
+    embeds: [dmEmbed],
+    components: [actionRow],
+  });
+
+  const interactionEmbed = new EmbedBuilder()
+    .setTitle(":shopping_cart:︱CPGG")
+    .setDescription(`I have sent you the code in [DM](${dmMessage.url})!`)
+    .setTimestamp()
+    .setColor(process.env.EMBED_COLOR_SUCCESS);
+
+  await sendResponse(interaction, { embeds: [interactionEmbed] });
 };

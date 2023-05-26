@@ -1,13 +1,22 @@
 import axios, { AxiosInstance } from "axios";
 import { Guild } from "discord.js";
 import prisma from "../handlers/prisma";
-import encryption from "../helpers/encryption";
-import { IEncryptionData } from "../interfaces/EncryptionData";
+import Encryption, { EncryptedData } from "../helpers/encryption";
+import { upsertApiCredentials } from "../helpers/upsertApiCredentials";
+
+const encryption = new Encryption();
 
 interface ApiCredentials {
-  url: IEncryptionData;
-  token: IEncryptionData;
-  [key: string]: IEncryptionData | unknown;
+  url: EncryptedData;
+  token: EncryptedData;
+  [key: string]: EncryptedData | unknown;
+}
+
+export class CtrlPanelAPIError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CtrlPanelAPIError";
+  }
 }
 
 class CtrlPanelAPI {
@@ -21,7 +30,7 @@ class CtrlPanelAPI {
     this.api = axios.create();
   }
 
-  private async fetchApiCredentials() {
+  private async fetchApiCredentials(): Promise<void> {
     const apiCredentials = await prisma.apiCredentials.findUnique({
       where: {
         guildId_apiName: {
@@ -32,37 +41,41 @@ class CtrlPanelAPI {
     });
 
     if (!apiCredentials || !apiCredentials.credentials) {
-      throw new Error(
-        "Please ask the server administrator to configure the CtrlPanel.gg API credentials for this guild to enable this functionality."
+      throw new CtrlPanelAPIError(
+        "API credentials are required for this functionality. Please configure the CtrlPanel.gg API credentials for this guild."
       );
     }
 
     this.apiCredentials = apiCredentials.credentials as ApiCredentials;
   }
 
-  private getPlainUrl() {
+  private async getPlainUrl(): Promise<string> {
     if (!this.apiCredentials) {
-      throw new Error("API credentials not fetched");
+      throw new CtrlPanelAPIError("API credentials not fetched");
     }
 
     const { url } = this.apiCredentials;
-    return encryption.decrypt(url);
+    return await encryption.decrypt(url);
   }
 
-  private getPlainToken() {
+  private async getPlainToken(): Promise<string> {
     if (!this.apiCredentials) {
-      throw new Error("API credentials not fetched");
+      throw new CtrlPanelAPIError("API credentials not fetched");
     }
 
     const { token } = this.apiCredentials;
-    return encryption.decrypt(token);
+    return await encryption.decrypt(token);
   }
 
-  public async generateVoucher(code: string, amount: number, uses: number) {
+  public async generateVoucher(
+    code: string,
+    amount: number,
+    uses: number
+  ): Promise<{ redeemUrl: string }> {
     await this.fetchApiCredentials();
 
-    const plainUrl = this.getPlainUrl();
-    const plainToken = this.getPlainToken();
+    const plainUrl = await this.getPlainUrl();
+    const plainToken = await this.getPlainToken();
 
     this.api.defaults.baseURL = plainUrl;
     this.api.defaults.headers.common["Authorization"] = plainToken
@@ -79,6 +92,26 @@ class CtrlPanelAPI {
     });
 
     return { redeemUrl: `${shopUrl}?voucher=${code}` };
+  }
+
+  public async updateApiCredentials(
+    scheme: string,
+    domain: string,
+    tokenData: string
+  ): Promise<void> {
+    const url = await encryption.encrypt(`${scheme}://${domain}`);
+    const token = await encryption.encrypt(tokenData);
+
+    if (!url || !token) {
+      throw new Error("URL and token must be set");
+    }
+
+    const credentials = {
+      url,
+      token,
+    };
+
+    await upsertApiCredentials(this.guild, "Ctrlpanel.gg", credentials);
   }
 }
 

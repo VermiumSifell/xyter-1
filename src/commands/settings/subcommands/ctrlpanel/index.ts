@@ -4,10 +4,12 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import encryption from "../../../../helpers/encryption";
-import { upsertApiCredentials } from "../../../../helpers/upsertApiCredentials";
+import CtrlPanelAPI, {
+  CtrlPanelAPIError,
+} from "../../../../services/CtrlPanelAPI";
 import checkPermission from "../../../../utils/checkPermission";
 import deferReply from "../../../../utils/deferReply";
+import logger from "../../../../utils/logger";
 import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -46,29 +48,29 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   if (!scheme || !domain || !tokenData)
     throw new Error("Scheme, domain, and token must be set");
 
-  const url = encryption.encrypt(`${scheme}://${domain}`);
-  const token = encryption.encrypt(tokenData);
-  if (!url || !token) throw new Error("URL and token must be set");
+  const ctrlPanelAPI = new CtrlPanelAPI(guild);
 
-  const credentials = {
-    url,
-    token,
-  };
+  try {
+    await ctrlPanelAPI.updateApiCredentials(scheme, domain, tokenData);
 
-  await upsertApiCredentials(guild, "Ctrlpanel.gg", credentials);
+    const embedSuccess = new EmbedBuilder()
+      .setAuthor({
+        name: "Configuration of Ctrlpanel.gg",
+        iconURL: "https://ctrlpanel.gg/img/controlpanel.png",
+      })
+      .setColor(process.env.EMBED_COLOR_SUCCESS)
+      .setFooter({
+        text: `Successfully configured by ${user.username}`,
+        iconURL: user.displayAvatarURL(),
+      })
+      .setTimestamp()
+      .setDescription(`API Address: \`${scheme}://${domain}\``);
 
-  const embedSuccess = new EmbedBuilder()
-    .setAuthor({
-      name: "Configuration of Ctrlpanel.gg",
-      iconURL: "https://ctrlpanel.gg/img/controlpanel.png",
-    })
-    .setColor(process.env.EMBED_COLOR_SUCCESS)
-    .setFooter({
-      text: `Successfully configured by ${user.username}`,
-      iconURL: user.displayAvatarURL(),
-    })
-    .setTimestamp()
-    .setDescription(`API Address: \`${scheme}://${domain}\``);
-
-  await sendResponse(interaction, { embeds: [embedSuccess] });
+    await sendResponse(interaction, { embeds: [embedSuccess] });
+  } catch (error: unknown) {
+    if (error instanceof CtrlPanelAPIError) {
+      logger.error("CtrlPanelAPI error:", error.message);
+      throw error;
+    }
+  }
 };

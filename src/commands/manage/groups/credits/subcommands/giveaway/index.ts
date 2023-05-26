@@ -11,10 +11,10 @@ import {
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
 // Configurations
-import CtrlPanelAPI from "../../../../../services/CtrlPanelAPI";
-import checkPermission from "../../../../../utils/checkPermission";
-import deferReply from "../../../../../utils/deferReply";
-import sendResponse from "../../../../../utils/sendResponse";
+import CtrlPanelAPI from "../../../../../../services/CtrlPanelAPI";
+import checkPermission from "../../../../../../utils/checkPermission";
+import deferReply from "../../../../../../utils/deferReply";
+import sendResponse from "../../../../../../utils/sendResponse";
 
 // Function
 export const builder = (command: SlashCommandSubcommandBuilder) => {

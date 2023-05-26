@@ -1,6 +1,15 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import * as ctrlpanel from "./subcommands/ctrlpanel";
 
+import {
+  SubcommandHandlers,
+  executeSubcommand,
+} from "../../handlers/executeSubcommand";
+
+const subcommandHandlers: SubcommandHandlers = {
+  ctrlpanel: ctrlpanel.execute,
+};
+
 export const builder = new SlashCommandBuilder()
   .setName("shop")
   .setDescription("Guild shop")
@@ -8,13 +17,5 @@ export const builder = new SlashCommandBuilder()
   .addSubcommand(ctrlpanel.builder);
 
 export const execute = async (interaction: ChatInputCommandInteraction) => {
-  switch (interaction.options.getSubcommand()) {
-    case "ctrlpanel": {
-      await ctrlpanel.execute(interaction);
-      break;
-    }
-    default: {
-      throw new Error("Unknown command");
-    }
-  }
+  await executeSubcommand(interaction, subcommandHandlers);
 };

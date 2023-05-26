@@ -4,10 +4,10 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import CreditsManager from "../../../../../handlers/CreditsManager";
-import checkPermission from "../../../../../utils/checkPermission";
-import deferReply from "../../../../../utils/deferReply";
-import sendResponse from "../../../../../utils/sendResponse";
+import CreditsManager from "../../../../../../handlers/CreditsManager";
+import checkPermission from "../../../../../../utils/checkPermission";
+import deferReply from "../../../../../../utils/deferReply";
+import sendResponse from "../../../../../../utils/sendResponse";
 
 const creditsManager = new CreditsManager();
 
