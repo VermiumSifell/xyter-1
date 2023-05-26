@@ -1,7 +1,7 @@
 import { Client } from "discord.js";
-import checkDirectory from "../helpers/readDirectory";
 import { IEvent } from "../interfaces/Event";
 import logger from "../utils/logger";
+import checkDirectory from "../utils/readDirectory";
 
 export default async (client: Client) => {
   const profiler = logger.startTimer();
