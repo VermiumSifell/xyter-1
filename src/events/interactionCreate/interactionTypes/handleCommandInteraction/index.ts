@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { default as CooldownManager } from "../../../../handlers/CooldownManager";
+import interactionErrorHandler from "../../../../handlers/interactionErrorHandler";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import interactionErrorHandler from "../../../../helpers/interactionErrorHandler";
 import handleCooldown from "./handlers/handleCooldown";
 import handleUnavailableCommand from "./handlers/handleUnavailableCommand";
 

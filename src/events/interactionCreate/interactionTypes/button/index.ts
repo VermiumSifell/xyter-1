@@ -1,5 +1,5 @@
 import { ButtonInteraction } from "discord.js";
-import interactionErrorHandler from "../../../../helpers/interactionErrorHandler";
+import interactionErrorHandler from "../../../../handlers/interactionErrorHandler";
 
 export default async function handleButtonInteraction(
   interaction: ButtonInteraction
