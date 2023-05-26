@@ -1,6 +1,6 @@
 import { Guild, User } from "discord.js";
+import upsertGuildMember from "../helpers/upsertGuildMember";
 import logger from "../utils/logger";
-import upsertGuildMember from "./upsertGuildMember";
 
 const handleGuildMemberJoin = async (guild: Guild, user: User) => {
   try {

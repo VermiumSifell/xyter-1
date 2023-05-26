@@ -1,5 +1,5 @@
 import { GuildMember } from "discord.js";
-import handleGuildMemberJoin from "../../helpers/handleGuildMemberJoin";
+import handleGuildMemberJoin from "../../handlers/handleGuildMemberJoin";
 import { IEventOptions } from "../../interfaces/EventOptions";
 import logger from "../../utils/logger";
 
