@@ -4,10 +4,12 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
+import CreditsManager from "../../../../../../handlers/CreditsManager";
 import checkPermission from "../../../../../../utils/checkPermission";
 import deferReply from "../../../../../../utils/deferReply";
 import sendResponse from "../../../../../../utils/sendResponse";
-import economy from "../../../../../modules/credits";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -55,7 +57,7 @@ export const execute = async (
     throw new Error("Invalid user(s) or credit amount provided.");
   }
 
-  const transactionResult = await economy.transfer(
+  const transactionResult = await creditsManager.transfer(
     guild,
     fromUser,
     toUser,

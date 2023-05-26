@@ -4,9 +4,11 @@ import {
   SlashCommandSubcommandBuilder,
   User,
 } from "discord.js";
-import credits from "../../../../modules/credits";
+import CreditsManager from "../../../../handlers/CreditsManager";
 import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -23,7 +25,7 @@ export const execute = async (interaction: CommandInteraction) => {
     throw new Error("Unable to find the guild.");
   }
 
-  const topTen = await credits.topUsers(guild, 10);
+  const topTen = await creditsManager.topUsers(guild, 10);
 
   const embed = new EmbedBuilder()
     .setTimestamp()

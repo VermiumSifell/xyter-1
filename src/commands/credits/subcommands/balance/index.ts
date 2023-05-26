@@ -5,9 +5,11 @@ import {
   SlashCommandSubcommandBuilder,
   User,
 } from "discord.js";
-import credits from "../../../../modules/credits";
+import CreditsManager from "../../../../handlers/CreditsManager";
 import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -31,7 +33,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   }
 
   const checkAccount = options.getUser("account") || user;
-  const creditAccount = await credits.balance(guild, checkAccount);
+  const creditAccount = await creditsManager.balance(guild, checkAccount);
 
   const isUserCheckAccount = checkAccount.id === user.id;
   const pronoun = isUserCheckAccount ? "You" : "They";

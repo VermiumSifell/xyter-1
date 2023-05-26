@@ -3,9 +3,11 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import reputation from "../../../../handlers/ReputationManager";
+import ReputationManager from "../../../../handlers/ReputationManager";
 import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
+
+const reputationManager = new ReputationManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -28,7 +30,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   if (!user) throw new Error("User unavailable");
 
-  const userReputation = await reputation.check(checkUser);
+  const userReputation = await reputationManager.check(checkUser);
 
   const interactionEmbed = new EmbedBuilder()
     .setAuthor({

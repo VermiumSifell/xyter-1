@@ -6,14 +6,12 @@ import {
   User,
   codeBlock,
 } from "discord.js";
+import CreditsManager from "../../../../handlers/CreditsManager";
 import upsertGuildMember from "../../../../helpers/upsertGuildMember";
-import credits from "../../../../modules/credits";
 import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
-const GIFT_EMOJI = "🎁";
-const BALLOON_EMOJI = "🎉";
-const MESSAGE_EMOJI = "💬";
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -58,7 +56,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await upsertGuildMember(guild, user);
 
-  await credits.transfer(guild, user, recipient, amount);
+  await creditsManager.transfer(guild, user, recipient, amount);
 
   const recipientEmbed = await createRecipientEmbed(
     user,

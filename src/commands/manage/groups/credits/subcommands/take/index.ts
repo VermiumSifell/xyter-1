@@ -4,10 +4,12 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import credits from "../../../../../../handlers/CreditsManager";
+import CreditsManager from "../../../../../../handlers/CreditsManager";
 import checkPermission from "../../../../../../utils/checkPermission";
 import deferReply from "../../../../../../utils/deferReply";
 import sendResponse from "../../../../../../utils/sendResponse";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -61,7 +63,7 @@ export const execute = async (
     })
     .setTimestamp();
 
-  await credits.take(guild, discordReceiver, creditsAmount);
+  await creditsManager.take(guild, discordReceiver, creditsAmount);
 
   await sendResponse(interaction, { embeds: [embedSuccess] });
 };
