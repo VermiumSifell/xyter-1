@@ -1,8 +1,8 @@
 import { CommandInteraction } from "discord.js";
 import { default as CooldownManager } from "../../../../handlers/CooldownManager";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
+import interactionErrorHandler from "../../../../helpers/interactionErrorHandler";
 import handleCooldown from "./handlers/handleCooldown";
-import handleError from "./handlers/handleError";
 import handleUnavailableCommand from "./handlers/handleUnavailableCommand";
 
 const cooldownManager = new CooldownManager();
@@ -38,6 +38,6 @@ export default async function handleCommandInteraction(
       await currentCommand.execute(interaction);
     }
   } catch (error) {
-    await handleError(interaction, commandName, error);
+    await interactionErrorHandler(interaction, error);
   }
 }

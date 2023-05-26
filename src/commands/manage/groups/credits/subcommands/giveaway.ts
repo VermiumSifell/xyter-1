@@ -11,9 +11,9 @@ import {
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
 // Configurations
-import checkPermission from "../../../../../helpers/checkPermission";
-import deferReply from "../../../../../helpers/deferReply";
 import CtrlPanelAPI from "../../../../../services/CtrlPanelAPI";
+import checkPermission from "../../../../../utils/checkPermission";
+import deferReply from "../../../../../utils/deferReply";
 import sendResponse from "../../../../../utils/sendResponse";
 
 // Function

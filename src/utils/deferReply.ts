@@ -3,7 +3,7 @@ import {
   CommandInteraction,
   EmbedBuilder,
 } from "discord.js";
-import sendResponse from "../utils/sendResponse";
+import sendResponse from "./sendResponse";
 
 export default async (
   interaction: CommandInteraction | ButtonInteraction,

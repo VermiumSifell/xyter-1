@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import CooldownManager from "../../../handlers/CooldownManager";
 import ReputationManager from "../../../handlers/ReputationManager";
-import deferReply from "../../../helpers/deferReply";
 import generateCooldownName from "../../../helpers/generateCooldownName";
+import deferReply from "../../../utils/deferReply";
 import sendResponse from "../../../utils/sendResponse";
 
 const cooldownManager = new CooldownManager();

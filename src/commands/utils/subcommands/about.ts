@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import deferReply from "../../../helpers/deferReply";
+import deferReply from "../../../utils/deferReply";
 import sendResponse from "../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {

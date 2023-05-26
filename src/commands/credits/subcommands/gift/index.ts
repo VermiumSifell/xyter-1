@@ -6,9 +6,9 @@ import {
   User,
   codeBlock,
 } from "discord.js";
-import deferReply from "../../../../helpers/deferReply";
 import upsertGuildMember from "../../../../helpers/upsertGuildMember";
 import credits from "../../../../modules/credits";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 const GIFT_EMOJI = "🎁";

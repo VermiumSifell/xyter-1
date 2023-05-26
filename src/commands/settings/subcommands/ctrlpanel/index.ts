@@ -4,10 +4,10 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import checkPermission from "../../../../helpers/checkPermission";
-import deferReply from "../../../../helpers/deferReply";
 import encryption from "../../../../helpers/encryption";
 import { upsertApiCredentials } from "../../../../helpers/upsertApiCredentials";
+import checkPermission from "../../../../utils/checkPermission";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {

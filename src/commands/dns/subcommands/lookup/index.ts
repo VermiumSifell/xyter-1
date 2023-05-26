@@ -7,8 +7,8 @@ import {
 import dns from "node:dns";
 import { promisify } from "util";
 import { default as CooldownManager } from "../../../../handlers/CooldownManager";
-import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 const cooldownManager = new CooldownManager();

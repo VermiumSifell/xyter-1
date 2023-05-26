@@ -4,8 +4,8 @@ import {
   SlashCommandSubcommandBuilder,
   User,
 } from "discord.js";
-import deferReply from "../../../../helpers/deferReply";
 import credits from "../../../../modules/credits";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {

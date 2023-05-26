@@ -6,8 +6,8 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import checkPermission from "../../../../helpers/checkPermission";
-import deferReply from "../../../../helpers/deferReply";
+import checkPermission from "../../../../utils/checkPermission";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 // Function

@@ -5,8 +5,8 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import prisma from "../../../../handlers/prisma";
-import checkPermission from "../../../../helpers/checkPermission";
-import deferReply from "../../../../helpers/deferReply";
+import checkPermission from "../../../../utils/checkPermission";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {

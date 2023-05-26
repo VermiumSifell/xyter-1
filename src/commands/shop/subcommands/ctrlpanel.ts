@@ -8,9 +8,9 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { v4 as uuidv4 } from "uuid";
-import deferReply from "../../../helpers/deferReply";
 import credits from "../../../modules/credits";
 import CtrlPanelAPI from "../../../services/CtrlPanelAPI";
+import deferReply from "../../../utils/deferReply";
 import sendResponse from "../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {

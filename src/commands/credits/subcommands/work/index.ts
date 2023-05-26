@@ -7,8 +7,8 @@ import {
 import CooldownManager from "../../../../handlers/CooldownManager";
 import CreditsManager from "../../../../handlers/CreditsManager";
 import prisma from "../../../../handlers/prisma";
-import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
+import deferReply from "../../../../utils/deferReply";
 import sendResponse from "../../../../utils/sendResponse";
 import jobs from "./jobs";
 
