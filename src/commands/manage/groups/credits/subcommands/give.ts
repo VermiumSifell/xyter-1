@@ -4,10 +4,12 @@ import {
   PermissionsBitField,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import credits from "../../../../../handlers/CreditsManager";
+import CreditsManager from "../../../../../handlers/CreditsManager";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
 import sendResponse from "../../../../../utils/sendResponse";
+
+const creditsManager = new CreditsManager();
 
 export const builder = (
   command: SlashCommandSubcommandBuilder
@@ -47,7 +49,7 @@ export const execute = async (
   const creditsAmount = options.getInteger("amount", true);
 
   if (!discordReceiver || typeof creditsAmount !== "number") {
-    await interaction.editReply("Invalid user or credit amount provided.");
+    await sendResponse(interaction, "Invalid user or credit amount provided.");
     return;
   }
 
@@ -63,7 +65,7 @@ export const execute = async (
     })
     .setTimestamp();
 
-  await credits.give(guild, discordReceiver, creditsAmount);
+  await creditsManager.give(guild, discordReceiver, creditsAmount);
 
   await sendResponse(interaction, { embeds: [embedSuccess] });
 };

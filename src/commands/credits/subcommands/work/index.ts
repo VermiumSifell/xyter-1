@@ -4,12 +4,16 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import cooldown from "../../../../handlers/CooldownManager";
+import CooldownManager from "../../../../handlers/CooldownManager";
+import CreditsManager from "../../../../handlers/CreditsManager";
 import prisma from "../../../../handlers/prisma";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
-import economy from "../../../../modules/credits";
+import sendResponse from "../../../../utils/sendResponse";
 import jobs from "./jobs";
+
+const cooldownManager = new CooldownManager();
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -98,11 +102,11 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   );
 
   if (creditsEarned > 0) {
-    await economy.give(guild, user, creditsEarned); // Give the user the earned credits
+    await creditsManager.give(guild, user, creditsEarned); // Give the user the earned credits
   }
 
   // User Balance
-  const userBalance = await economy.balance(guild, user);
+  const userBalance = await creditsManager.balance(guild, user);
 
   const embedSuccess = new EmbedBuilder()
     .setColor(process.env.EMBED_COLOR_SUCCESS)
@@ -122,9 +126,9 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
       value: `${userBalance.balance} credits`,
     });
 
-  await interaction.editReply({ embeds: [embedSuccess] }); // Send the result as an embed message
+  await sendResponse(interaction, { embeds: [embedSuccess] });
 
-  await cooldown.setGuildMemberCooldown(
+  await cooldownManager.setCooldown(
     await generateCooldownName(interaction),
     guild,
     user,

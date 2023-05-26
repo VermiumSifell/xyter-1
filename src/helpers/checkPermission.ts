@@ -1,9 +1,6 @@
-import { BaseInteraction, PermissionResolvable } from "discord.js";
+import { Interaction, PermissionResolvable } from "discord.js";
 
-export default (
-  interaction: BaseInteraction,
-  permission: PermissionResolvable
-) => {
+export default (interaction: Interaction, permission: PermissionResolvable) => {
   if (!interaction.memberPermissions)
     throw new Error("Failed to check your permissions");
 

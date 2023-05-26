@@ -3,11 +3,15 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import cooldown from "../../../../../../handlers/CooldownManager";
+import CooldownManager from "../../../../../../handlers/CooldownManager";
+import CreditsManager from "../../../../../../handlers/CreditsManager";
 import prisma from "../../../../../../handlers/prisma";
 import deferReply from "../../../../../../helpers/deferReply";
 import generateCooldownName from "../../../../../../helpers/generateCooldownName";
-import economy from "../../../../../../modules/credits";
+import sendResponse from "../../../../../../utils/sendResponse";
+
+const cooldownManager = new CooldownManager();
+const creditsManager = new CreditsManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -39,7 +43,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
   });
 
   const weeklyBonusAmount = guildCreditsSettings.weeklyBonusAmount;
-  const userEconomy = await economy.give(guild, user, weeklyBonusAmount);
+  const userEconomy = await creditsManager.give(guild, user, weeklyBonusAmount);
 
   const embed = new EmbedBuilder()
     .setColor(process.env.EMBED_COLOR_SUCCESS)
@@ -56,11 +60,11 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     })
     .setTimestamp();
 
-  await interaction.editReply({ embeds: [embed] });
+  await sendResponse(interaction, { embeds: [embed] });
 
   const cooldownDuration = 24 * 60 * 60; // 24 hours in seconds
   const cooldownName = await generateCooldownName(interaction);
-  await cooldown.setGuildMemberCooldown(
+  await cooldownManager.setCooldown(
     cooldownName,
     guild,
     user,

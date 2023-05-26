@@ -3,11 +3,14 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import cooldown from "../../../handlers/CooldownManager";
-import reputation from "../../../handlers/ReputationManager";
+import CooldownManager from "../../../handlers/CooldownManager";
+import ReputationManager from "../../../handlers/ReputationManager";
 import deferReply from "../../../helpers/deferReply";
 import generateCooldownName from "../../../helpers/generateCooldownName";
 import sendResponse from "../../../utils/sendResponse";
+
+const cooldownManager = new CooldownManager();
+const reputationManager = new ReputationManager();
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -56,7 +59,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     throw new Error("It is not possible to give yourself reputation.");
   }
 
-  await reputation.repute(targetUser, reputationType);
+  await reputationManager.repute(targetUser, reputationType);
 
   const emoji = reputationType === "positive" ? "😊" : "😔";
 
@@ -75,7 +78,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     embeds: [interactionEmbed],
   });
 
-  await cooldown.setGuildMemberCooldown(
+  await cooldownManager.setCooldown(
     await generateCooldownName(interaction),
     guild,
     user,

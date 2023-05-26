@@ -1,13 +1,21 @@
-import { BaseInteraction, EmbedBuilder } from "discord.js";
+import {
+  ButtonInteraction,
+  CommandInteraction,
+  EmbedBuilder,
+} from "discord.js";
+import sendResponse from "../utils/sendResponse";
 
-export default async (interaction: BaseInteraction, ephemeral: boolean) => {
+export default async (
+  interaction: CommandInteraction | ButtonInteraction,
+  ephemeral: boolean
+) => {
   if (!interaction.isRepliable()) {
     throw new Error("Failed to reply to your request.");
   }
 
   await interaction.deferReply({ ephemeral });
 
-  await interaction.editReply({
+  await sendResponse(interaction, {
     embeds: [
       new EmbedBuilder()
         .setTimestamp(new Date())

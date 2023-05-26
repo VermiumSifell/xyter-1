@@ -9,6 +9,7 @@ import {
 import deferReply from "../../../../helpers/deferReply";
 import upsertGuildMember from "../../../../helpers/upsertGuildMember";
 import credits from "../../../../modules/credits";
+import sendResponse from "../../../../utils/sendResponse";
 
 const GIFT_EMOJI = "🎁";
 const BALLOON_EMOJI = "🎉";
@@ -76,7 +77,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
 
   await recipient.send({ embeds: [recipientEmbed] });
 
-  await interaction.editReply({ embeds: [senderEmbed] });
+  await sendResponse(interaction, { embeds: [senderEmbed] });
 };
 
 const createRecipientEmbed = async (

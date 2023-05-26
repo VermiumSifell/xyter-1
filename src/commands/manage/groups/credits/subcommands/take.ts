@@ -45,7 +45,7 @@ export const execute = async (
   const creditsAmount = options.getInteger("amount");
 
   if (!discordReceiver || typeof creditsAmount !== "number") {
-    await interaction.editReply("Invalid user or credit amount provided.");
+    await sendResponse(interaction, "Invalid user or credit amount provided.");
     return;
   }
 

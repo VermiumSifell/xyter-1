@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import deferReply from "../../../helpers/deferReply";
 import credits from "../../../modules/credits";
 import CtrlPanelAPI from "../../../services/CtrlPanelAPI";
+import sendResponse from "../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -89,9 +90,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
         .setColor(successColor)
         .setFooter({ text: footerText, iconURL: footerIcon });
 
-      await interaction.editReply({
-        embeds: [interactionEmbed],
-      });
+      await sendResponse(interaction, { embeds: [interactionEmbed] });
     });
 
   return true;

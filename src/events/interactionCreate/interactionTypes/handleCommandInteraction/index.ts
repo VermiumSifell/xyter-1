@@ -1,9 +1,11 @@
 import { CommandInteraction } from "discord.js";
-import cooldown from "../../../../handlers/CooldownManager";
+import { default as CooldownManager } from "../../../../handlers/CooldownManager";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
 import handleCooldown from "./handlers/handleCooldown";
 import handleError from "./handlers/handleError";
 import handleUnavailableCommand from "./handlers/handleUnavailableCommand";
+
+const cooldownManager = new CooldownManager();
 
 export default async function handleCommandInteraction(
   interaction: CommandInteraction
@@ -23,7 +25,7 @@ export default async function handleCommandInteraction(
   try {
     const cooldownItem = await generateCooldownName(interaction);
     const { guildCooldown, userCooldown, guildMemberCooldown } =
-      await cooldown.checkCooldowns(cooldownItem, guild, user);
+      await cooldownManager.checkCooldowns(cooldownItem, guild, user);
 
     if (guildCooldown || userCooldown || guildMemberCooldown) {
       await handleCooldown(

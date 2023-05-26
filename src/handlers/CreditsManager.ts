@@ -482,4 +482,4 @@ class CreditsManager {
   }
 }
 
-export default new CreditsManager();
+export default CreditsManager;

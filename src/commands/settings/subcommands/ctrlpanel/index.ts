@@ -8,6 +8,7 @@ import checkPermission from "../../../../helpers/checkPermission";
 import deferReply from "../../../../helpers/deferReply";
 import encryption from "../../../../helpers/encryption";
 import { upsertApiCredentials } from "../../../../helpers/upsertApiCredentials";
+import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -69,7 +70,5 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     .setTimestamp()
     .setDescription(`API Address: \`${scheme}://${domain}\``);
 
-  await interaction.editReply({
-    embeds: [embedSuccess],
-  });
+  await sendResponse(interaction, { embeds: [embedSuccess] });
 };

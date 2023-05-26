@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import deferReply from "../../../../helpers/deferReply";
 import credits from "../../../../modules/credits";
+import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -60,7 +61,5 @@ export const execute = async (interaction: CommandInteraction) => {
   )}`;
   embed.setDescription(description);
 
-  await interaction.editReply({
-    embeds: [embed],
-  });
+  await sendResponse(interaction, { embeds: [embed] });
 };

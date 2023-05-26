@@ -8,9 +8,12 @@ import {
   SlashCommandSubcommandBuilder,
   TextChannel,
 } from "discord.js";
-import cooldown from "../../../../handlers/CooldownManager";
+import CooldownManager from "../../../../handlers/CooldownManager";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
+import sendResponse from "../../../../utils/sendResponse";
+
+const cooldownManager = new CooldownManager();
 
 interface MemeContent {
   title: string;
@@ -51,23 +54,22 @@ export const execute = async (
     const buttons = createButtons(content.permalink);
     const embed = createEmbed(content, authorData);
 
-    await interaction.editReply({ embeds: [embed], components: [buttons] });
+    await sendResponse(interaction, {
+      embeds: [embed],
+      components: [buttons],
+    });
   } catch (error) {
     throw new Error(
       "Sorry, we couldn't fetch a meme at the moment. Please try again later."
     );
   }
 
-  if (guild) {
-    await cooldown.setGuildMemberCooldown(
-      cooldownItem,
-      guild,
-      user,
-      cooldownDuration
-    );
-  } else {
-    await cooldown.setUserCooldown(cooldownItem, user, cooldownDuration);
-  }
+  await cooldownManager.setCooldown(
+    cooldownItem,
+    guild || null,
+    user,
+    cooldownDuration
+  );
 };
 
 async function fetchRandomMeme(): Promise<MemeContent> {

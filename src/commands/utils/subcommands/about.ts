@@ -8,6 +8,7 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import deferReply from "../../../helpers/deferReply";
+import sendResponse from "../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -62,7 +63,7 @@ export const execute = async (interaction: CommandInteraction) => {
       iconURL: user.displayAvatarURL(),
     });
 
-  await interaction.editReply({
+  await sendResponse(interaction, {
     embeds: [interactionEmbed],
     components: [buttons],
   });

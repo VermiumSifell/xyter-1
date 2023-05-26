@@ -6,10 +6,12 @@ import {
 } from "discord.js";
 import dns from "node:dns";
 import { promisify } from "util";
-import cooldown from "../../../../handlers/CooldownManager";
+import { default as CooldownManager } from "../../../../handlers/CooldownManager";
 import deferReply from "../../../../helpers/deferReply";
 import generateCooldownName from "../../../../helpers/generateCooldownName";
 import sendResponse from "../../../../utils/sendResponse";
+
+const cooldownManager = new CooldownManager();
 
 const dnsLookup = promisify(dns.lookup);
 
@@ -71,16 +73,12 @@ export const execute = async (
     const cooldownName = await generateCooldownName(interaction);
     const cooldownDuration = 5;
 
-    if (guild) {
-      await cooldown.setGuildMemberCooldown(
-        cooldownName,
-        guild,
-        user,
-        cooldownDuration
-      );
-    } else {
-      await cooldown.setUserCooldown(cooldownName, user, cooldownDuration);
-    }
+    await cooldownManager.setCooldown(
+      cooldownName,
+      guild || null,
+      user,
+      cooldownDuration
+    );
   } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code === "ENOTFOUND") {
       throw new Error(

@@ -1,7 +1,10 @@
 import { Channel, ChannelType, Guild, Message, User } from "discord.js";
-import cooldown from "../../../handlers/CooldownManager";
-import economy from "../../../modules/credits";
+import CooldownManager from "../../../handlers/CooldownManager";
+import CreditsManager from "../../../handlers/CreditsManager";
 import logger from "../../../utils/logger";
+
+const cooldownManager = new CooldownManager();
+const creditsManager = new CreditsManager();
 
 const MINIMUM_LENGTH = 5;
 
@@ -22,7 +25,7 @@ export default async (message: Message) => {
   }
 
   try {
-    await economy.give(guild, author, 1);
+    await creditsManager.give(guild, author, 1);
   } catch (error: unknown) {
     logger.error(
       `Failed to give credits to user ${author.username} in guild ${
@@ -48,7 +51,7 @@ function isMessageValid(
 }
 
 async function isUserOnCooldown(guild: Guild, author: User): Promise<boolean> {
-  const cooldownActive = await cooldown.checkGuildMemberCooldown(
+  const cooldownActive = await cooldownManager.checkCooldown(
     cooldownName,
     guild,
     author
@@ -57,5 +60,5 @@ async function isUserOnCooldown(guild: Guild, author: User): Promise<boolean> {
 }
 
 async function setCooldown(guild: Guild, user: User) {
-  await cooldown.setGuildMemberCooldown(cooldownName, guild, user, 5);
+  await cooldownManager.setCooldown(cooldownName, guild, user, 5);
 }

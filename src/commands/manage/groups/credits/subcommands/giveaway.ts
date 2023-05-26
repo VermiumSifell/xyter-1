@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import checkPermission from "../../../../../helpers/checkPermission";
 import deferReply from "../../../../../helpers/deferReply";
 import CtrlPanelAPI from "../../../../../services/CtrlPanelAPI";
+import sendResponse from "../../../../../utils/sendResponse";
 
 // Function
 export const builder = (command: SlashCommandSubcommandBuilder) => {
@@ -71,7 +72,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     uses
   );
 
-  await interaction.editReply({
+  await sendResponse(interaction, {
     embeds: [embedSuccess.setDescription(`Successfully created code: ${code}`)],
   });
 

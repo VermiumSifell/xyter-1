@@ -7,6 +7,7 @@ import {
 import prisma from "../../../../handlers/prisma";
 import checkPermission from "../../../../helpers/checkPermission";
 import deferReply from "../../../../helpers/deferReply";
+import sendResponse from "../../../../utils/sendResponse";
 
 export const builder = (command: SlashCommandSubcommandBuilder) => {
   return command
@@ -88,7 +89,7 @@ export const execute = async (interaction: ChatInputCommandInteraction) => {
     })
     .setTimestamp();
 
-  await interaction.editReply({
+  await sendResponse(interaction, {
     embeds: [
       embedSuccess
         .setDescription("Configuration updated successfully!")
