@@ -16,6 +16,7 @@ model Guild {
   guildCreditsSettings GuildCreditsSettings?
   apiCredentials       ApiCredentials[]
   cooldowns            Cooldown[]
+  GuildReactionRole    GuildReactionRole[]
 }
 
 model User {
@@ -140,4 +141,18 @@ model ImportOldData {
   id              String  @unique
   done            Boolean @default(false)
   beforeMessageId String?
+}
+
+model GuildReactionRole {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guild Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  guildId   String
+  messageId String
+  roleId    String
+
+  @@unique([guildId, messageId, roleId])
 }
